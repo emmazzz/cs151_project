@@ -1,7 +1,7 @@
 # cs151_project
 CS151 Project: fact-based Q&A chatbot
 
-##Initial Attempt: simple.pl
+## Initial Attempt: simple.pl
 Install `swi-prolog` and run
 ```
 $ swipl
@@ -27,4 +27,4 @@ Have a nice day!
 true .
 ```
 
-##Stage 1: movie terminology detection
+## Stage 1: movie terminology detection
