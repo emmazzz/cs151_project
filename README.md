@@ -35,6 +35,6 @@ true .
 ## Stage 1: movie terminology detection
 Single response to single-keyword-specifying queries.
 Questions involve any one of the three attributes:
-    -movie (i.e. title)
-    -star
-    -director
+* movie (i.e. title)
+* star
+* director
