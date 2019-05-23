@@ -6,9 +6,14 @@ Install `swi-prolog` and run
 ```
 $ swipl
 ```
-Load `simple.pl` and interact with it like
+Load `simple.pl`, `token.pl`, `stringops` and interact with it like
 ```
-?- [simple].
+?- [simple]. [stringops]. [token].
+
+true.
+
+true.
+
 true.
 
 ?- hi.
