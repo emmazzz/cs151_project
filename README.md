@@ -6,7 +6,7 @@ Install `swi-prolog` and run
 ```
 $ swipl
 ```
-Load `simple.pl`, `token.pl`, `stringops` and interact with it like
+Load `simple.pl`, `token.pl`, `stringops.pl` and interact with it like
 ```
 ?- [simple]. [stringops]. [token].
 
@@ -33,3 +33,8 @@ true .
 ```
 
 ## Stage 1: movie terminology detection
+Single response to single-keyword-specifying queries.
+Questions involve any one of the three attributes:
+    -movie (i.e. title)
+    -star
+    -director
