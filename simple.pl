@@ -33,9 +33,5 @@ control(Input, Database) :-
 % answer(InputList, Database,
 %   "Thanks for your information!", [direct(Movie, Person)|Database]) :-
 %   append(Person, ["directs"|Movie], InputList).
-
-
 answer(WordList, Database, "Enter another question or 'bye' to quit.", Database) :-
   tokenize(WordList,Result,Database), writeln(Result).
-
-  /* rmvfrm_words(Result, Alph), Alph \= "" */

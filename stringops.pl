@@ -55,6 +55,7 @@ concat_string_list_of_lists([Head|Tail], Result) :-
   concat_string_list(Head, H),
   string_concat(H, ", ", HeadSpace),
   string_concat(HeadSpace, Rest, Result).
+
 /* Checks if list is empty */
 list_empty([], true).
 list_empty([_|_], false).
