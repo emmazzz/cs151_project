@@ -22,3 +22,40 @@ good_cs([Char | CharsIn], [Char | CharsOut]) :-
     Char = ' '), good_cs(CharsIn, CharsOut).
 good_cs([_ | CharsIn], CharsOut) :-
     good_cs(CharsIn, CharsOut).
+
+/*
+    Concatenates strings stored in a list.
+    Usage: concat([str1,str2,...,stri], combinedstring)
+            note that combined string cannot also be contained in StrList
+*/
+concat(StrList, Res) :- %Res can't be contained in 
+    maplist(atom_chars, StrList, Lists),
+    append(Lists, List),
+    atom_chars(Res, List).
+
+
+concat_string_list([],"").
+concat_string_list([Head], Head).
+concat_string_list([Head|Tail], Result) :-
+  concat_string_list(Tail, Rest),
+  string_concat(Head, " ", HeadSpace),
+  string_concat(HeadSpace, Rest, Result).
+
+/*
+    Formats a list of lists in the following manner:
+    Usage: concat_string_list_of_lists([["David", "Lynch"], ["First", "Last"], ["Some",  "Name"]], Result), writeln(Result).
+    ==> "David Lynch, First Last, and Some Name"
+*/
+concat_string_list_of_lists([],"").
+concat_string_list_of_lists([Head], H):- concat_string_list(Head, H).
+concat_string_list_of_lists([First,Second],H):- concat_string_list(First,F), 
+    concat_string_list(Second, S), concat_string_list([F, "and", S],H).
+concat_string_list_of_lists([Head|Tail], Result) :-
+  concat_string_list_of_lists(Tail, Rest),
+  concat_string_list(Head, H),
+  string_concat(H, ", ", HeadSpace),
+  string_concat(HeadSpace, Rest, Result).
+
+/* Checks if list is empty */
+list_empty([], true).
+list_empty([_|_], false).

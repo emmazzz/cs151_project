@@ -1,20 +1,20 @@
 % entry point
-hi :- start([ % start with these movies Movie, Actor list, director
+database([ % start with these movies Movie, Actor list, director
   star(["Kill", "Bill"],[["Uma", "Thurman"],["Michael", "Madsen"]], ["Quentin", "Tarantino"]),
   star(["Kill", "Bill", "Three"],[["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
-  star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"]],["David","Lynch"]),
-  star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"]],["David","Lynch"]),
+  star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"],["Quentin", "Tarantino"]],["David","Lynch"]),
+  star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"], ["Richard", "Pryor"]],["David","Lynch"]),
   star(["Pulp","Fiction"], [["John","Travolta"],["Uma", "Thurman"]], ["Quentin", "Tarantino"])]).
-
+hi :- database(X), start(X).
 start(Database) :-
   ask(Input),
   control(Input, Database).
+
 
 ask(Input) :-
   write('Question: '),
   flush,
   read_line_to_string(user_input,Input).
-
 control("bye", _) :-
   writeln('Have a nice day!'),flush.
 control(Input, Database) :-
@@ -33,13 +33,5 @@ control(Input, Database) :-
 % answer(InputList, Database,
 %   "Thanks for your information!", [direct(Movie, Person)|Database]) :-
 %   append(Person, ["directs"|Movie], InputList).
-answer(WordList, Database, "Pardon?", Database) :-
-  tokenize(WordList,Result,Database).
-  %writeln(Result).
-
-concat_string_list([],"").
-concat_string_list([Head], Head).
-concat_string_list([Head|Tail], Result) :-
-  concat_string_list(Tail, Rest),
-  string_concat(Head, " ", HeadSpace),
-  string_concat(HeadSpace, Rest, Result).
+answer(WordList, Database, "Enter another question or 'bye' to quit.", Database) :-
+  tokenize(WordList,Result,Database), writeln(Result).
