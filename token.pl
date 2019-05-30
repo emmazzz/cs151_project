@@ -52,12 +52,37 @@ tokenize_string_list([Word|Rest], Accumulated, RestTokens, Database, QAttr, PAtt
 finds_closest_in_database(WordList, Result, Database, QAttr, PAttr,Suffix, Message) :-
   exists_in_database_left(WordList, Result, Database,RelevantData,ValidRoles, ProvidedInfo), %Last param is ProvidedInfo for future use
   attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message, Suffix,ValidRoles,ProvidedInfo).
-  %change above for printing variable length
+
 finds_closest_in_database(WordList, Result, Database,QAttr, PAttr,Suffix, Message) :-
   exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo),  %Last param is ProvidedInfo for future use
   attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles,ProvidedInfo).
 
-    %change above for printing variable length
+/* If we couldn't find results for any attribute in the query, we look to last names of stars and directors and prompt user to clarify their
+    query if there are ambiguities */
+/* Director last names */
+finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Message) :-
+  not(exists_in_database_left(WordList, Result, Database,RelevantData,ValidRoles, ProvidedInfo)), %Last param is ProvidedInfo for future use
+  not(exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)),
+  one_word_exists_in_database_right(WordList, Result2, Database),
+  one_word_exists_in_database_left(WordList, Result2, Database), PAttr = director, concat_string_list(Result2,ResString),
+  findall(First,(member(star(_, _, [First, ResString]), Database)),S), sort(S,Less),write(Less), len(Less, L),write("\nDid you know there are "),
+  write(L), write(" "), write(PAttr), write("s you might have meant? \nWhich of these "), write(PAttr), write("s did you mean: "), format_string_list(Less,ToStr),
+  write(ToStr), write("?  "), read_line_to_string(user_input,In), ((member(In, Less), writeln("Thanks! Showing results for "), write(In), write(" "), write(ResString),
+    write(": "),append(WordList,[In,ResString],NWL),finds_closest_in_database(NWL, [In, ResString], Database, QAttr, PAttr, Suffix, Message), writeln(Message));
+     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))).
+
+/* Star last names */
+finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Message) :-
+  not(exists_in_database_left(WordList, Result, Database,RelevantData,ValidRoles, ProvidedInfo)),
+  not(exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)),
+  one_word_exists_in_database_right(WordList, Result2, Database),
+  one_word_exists_in_database_left(WordList, Result2, Database), PAttr = star, concat_string_list(Result2,ResString),
+  findall(First,(member(star(Movie, X, Director), Database),member([First,ResString],X)),S), 
+  sort(S,Less),write(Less), len(Less, L),write("\nDid you know there are "),
+  write(L), write(" "), write(PAttr), write("s you might have meant? \nWhich of these "), write(PAttr), write("s did you mean: "), format_string_list(Less,ToStr),
+  write(ToStr), write("?  "), read_line_to_string(user_input,In), ((member(In, Less), writeln("Thanks! Showing results for "), write(In), write(" "), write(ResString),
+    write(": "),append(WordList,[In,ResString],NWL),finds_closest_in_database(NWL, [In, ResString], Database, QAttr, PAttr, Suffix, Message), writeln(Message));
+     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))). 
 
 finds_closest_in_database(WordList, Result, Database,QAttr, PAttr,Suffix, Message) :-
   append([_], ShorterWordList, WordList),
@@ -72,7 +97,7 @@ matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole):- not(PAttr = Valid
   NewRole = ValidRoles.
 matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole) :- not(PAttr = ValidRoles),PAttr = notspecified, ValidRoles = stardirector,
  concat_string_list(ProvidedInfo, Strinfo), write(Strinfo), write(" has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: "),
-  read_line_to_string(user_input,In), setRole(In,NewRole).
+  read_line_to_string(user_input,In), setRole(In,NewRole). 
 
 setRole(In,NewRole):- In = "a", NewRole = star.
 setRole(In,NewRole):- In = "b", NewRole = director.
@@ -158,6 +183,24 @@ exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,P
 exists_in_database_right(WordList, Result, Database, RelevantData, ValidRoles,ProvidedInfo) :-
   append(ShorterWordList, [_], WordList),
   exists_in_database_right(ShorterWordList, Result, Database, RelevantData, ValidRoles,ProvidedInfo).
+
+
+
+one_word_exists_in_database_left(WordList, WordList, Database) :-
+  member(star(Movie, X, Director), Database),nth1(1,WordList,Name),member([First,Name],X).
+one_word_exists_in_database_left(WordList, WordList, Database) :-
+  nth1(1,WordList,Name),member(star(Movie, Stars, [First,Name]), Database).
+one_word_exists_in_database_left(WordList, Result, Database) :-
+  append([_], ShorterWordList, WordList),
+  one_word_exists_in_database_left(ShorterWordList, Result, Database).
+
+one_word_exists_in_database_right(WordList, WordList, Database) :-
+  member(star(Movie, X, Director), Database),nth1(1,WordList,Name),member([First,Name],X).
+one_word_exists_in_database_right(WordList, WordList, Database) :-
+  nth1(1,WordList,Name),member(star(Movie, Stars, [First,Name]), Database).
+one_word_exists_in_database_right(WordList, Result, Database) :-
+  append(ShorterWordList, [_], WordList),
+  one_word_exists_in_database_right(ShorterWordList, Result, Database).
 %---------------- Query question patterns ------------------------------------
 
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern1(WordList, QAttr, PAttr, Suffix).
@@ -195,6 +238,7 @@ token(S, A, Suffix) :- string_lower(S, LowS), attribute_token(LowS, A, Suffix).
 attribute_token(S, star,Suffix) :- string_concat("star", Suffix, S).
 attribute_token(S, star,Suffix) :- string_concat("act", Suffix, S).
 attribute_token(S, director,Suffix) :- string_concat("direct", Suffix, S).
+attribute_token(S, director,Suffix) :- S="by".
 attribute_token(S, director,Suffix) :- string_concat("filmmaker", Suffix, S).
 attribute_token(S, director,Suffix) :- string_concat("made", Suffix, S).
 attribute_token(S, director,Suffix) :- string_concat("mak", Suffix, S). %making, make

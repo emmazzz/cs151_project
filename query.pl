@@ -8,7 +8,6 @@
   Movies = [["Movie", "Starring", "Lynch"], ["Lost", "Highway"], ["Mulholland", "Drive"]].
 */
 
-/* 1 for movie, 2 for actor, 3 for director*/
 /* movies by person; can't tell if star or director provided */
 find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
 	NewRole = stardirector, find_all_movies_by_person(AttrList, Movies, Database).

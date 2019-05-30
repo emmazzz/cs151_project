@@ -41,6 +41,22 @@ concat_string_list([Head|Tail], Result) :-
   string_concat(Head, " ", HeadSpace),
   string_concat(HeadSpace, Rest, Result).
 
+/* 
+    Gets comma and and-formatted string from list of strings (i.e. not nested; 
+    see concat_string_list_of_lists for formatting nested lists) 
+*/
+format_string_list([],"").
+format_string_list([Head], Head).
+format_string_list([First, Second], H) :- concat_string_list([First, "and",Second],H).
+format_string_list([Head|Tail], Result) :-
+  format_string_list(Tail, Rest),
+  string_concat(Head, ", ", HeadSpace),
+  string_concat(HeadSpace, Rest, Result).
+
+/* Gets length of list */
+len(N,L) :- len(N, 0, L).
+len([],L,L).
+len([_|N],T,L) :- NT is T+1, len(N, NT, L).
 /*
     Formats a list of lists in the following manner:
     Usage: concat_string_list_of_lists([["David", "Lynch"], ["First", "Last"], ["Some",  "Name"]], Result), writeln(Result).
