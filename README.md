@@ -8,8 +8,7 @@ $ swipl
 ```
 Load `simple.pl`, `token.pl`, `stringops.pl`, 'query.pl' and interact with it like
 ```
-?- [simple]. [stringops]. [token]. [query].
-
+?- [stringops]. [token]. [query]. [simple].
 true.
 
 true.
