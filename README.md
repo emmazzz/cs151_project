@@ -62,7 +62,7 @@ detect keywords and the patterns within which they reside.
 ___
 _Examples of queries_ we will be able to parse after completing this stage are as follows (ranging from
 simpler to more complex):
-* What did _Quentin Tarantino_** act in?
+* What did _Quentin Tarantino_ act in?
 * _Quentin Tarantino_  acted in what?
 * _Quentin Tarantino_  and _David Lynch_ are two great directors, but I want to see some
 movies by the former.
