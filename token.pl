@@ -217,7 +217,7 @@ pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower
   nth1(AInd, WordList, X),AInd > QInd, member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd>AInd.
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower(QW,QWL),
   qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
-  nth1(AInd, WordList, X),AInd > QInd, not(negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd)), ResultP = notspecified.
+  nth1(AInd, WordList, X),AInd > QInd, not(negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd)),writeln("HI"), ResultP = notspecified.
 
 negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd) :- member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd>AInd.
 %Who ... attribute

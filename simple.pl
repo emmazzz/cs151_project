@@ -1,11 +1,29 @@
 % entry point
+
 database([ % start with these movies Movie, Actor list, director
   star(["Kill", "Bill"],[["Uma", "Thurman"],["Michael", "Madsen"]], ["Quentinstwin", "Tarantino"]),
   star(["Weird", "Movie"],[["Lara", "Bagdasarian"],["Michael", "Madsen"]], ["Abhijeet", "Tarantino"]),
   star(["Kill", "Bill", "Three"],[["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
   star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"],["Quentin", "Tarantino"]],["David","Lynch"]),
   star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"], ["Richard", "Pryor"]],["David","Lynch"]),
+  star(["Pulp","Fiction"], [["John","Travolta"],["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
+  star(["Weird", "Movie"],[["Lara", "Bagdasarian"],["Michael", "Madsen"]], ["Abhijeet", "Tarantino"]),
+  star(["Kill", "Bill", "Three"],[["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
+  star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"],["Quentin", "Tarantino"]],["David","Lynch"]),
+  star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"], ["Richard", "Pryor"]],["David","Lynch"]),
+  star(["Pulp","Fiction"], [["John","Travolta"],["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
+  star(["Weird", "Movie"],[["Lara", "Bagdasarian"],["Michael", "Madsen"]], ["Abhijeet", "Tarantino"]),
+  star(["Kill", "Bill", "Three"],[["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
+  star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"],["Quentin", "Tarantino"]],["David","Lynch"]),
+  star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"], ["Richard", "Pryor"]],["David","Lynch"]),
+  star(["Pulp","Fiction"], [["John","Travolta"],["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
+  star(["Weird", "Movie"],[["Lara", "Bagdasarian"],["Michael", "Madsen"]], ["Abhijeet", "Tarantino"]),
+  star(["Kill", "Bill", "Three"],[["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
+  star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"],["Quentin", "Tarantino"]],["David","Lynch"]),
+  star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"], ["Richard", "Pryor"]],["David","Lynch"]),
   star(["Pulp","Fiction"], [["John","Travolta"],["Uma", "Thurman"]], ["Quentin", "Tarantino"])]).
+
+
 hi :- database(X), start(X).
 start(Database) :-
   ask(Input),

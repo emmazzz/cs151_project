@@ -70,3 +70,25 @@ ___
 Note that we cannot merely rely on proper nouns being present in our database to completely parse a request into our 
 required information fields for proper retrieval from our database, as some actors are also directors and there is often 
 available information in the query to inform our predictions of a query's intent.
+---
+Logic Programming Parsing Procedure
+*1.* Top down parsing for tokenization due to restricted vocabulary and specific application.
+*2.* DCG formulation, Sentence -> Quesiton word (QW) Provided info (PI) Requested Attribute (RA)
+*3.* CFG -- QW --> 'I want to know', 
+*4.* Vocabulary e.g. Attribute -> {movie, star, director}
+---
+
+4 test examples for demo:
+General usage:
+Show all movies by Quentin Tarantino?
+What was a movie by Tarantino? 
+What was a movie with Tarantino involved? //please refine your query ... 3 options -- detecting waht is missing
+Pattern detection:
+[double negative example]
+What movie was Quentin Tarantino an actor for? //forms of word via concat
+What was Quentin Tarantino an actor for? //no specification of 'movie' -- see pattern a
+QT was an actor for what? //pattern b
+
+
+Why Logic Programming?
+A declarative language is well-suited for key-word and pattern recognitions, which we utilize through our identification of *definite-clause grammars*.
