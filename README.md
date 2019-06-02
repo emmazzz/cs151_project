@@ -93,7 +93,7 @@ What was a movie by Tarantino?
 What was a movie with Tarantino involved? //please refine your query ... 3 options -- detecting waht is missing . 
 
 Pattern detection:  
-Who didn't not act in Titanic  // double negation . 
+Who didn't not act in Titanic  // double negation   
 What movie was Quentin Tarantino an actor for? //forms of word via concat  
 What was Quentin Tarantino an actor for? //no specification of 'movie' -- see pattern a  
 QT was an actor for what? //pattern b  
