@@ -1,11 +1,16 @@
 % entry point
-database([ % start with these movies Movie, Actor list, director
-  star(["Kill", "Bill"],[["Uma", "Thurman"],["Michael", "Madsen"]], ["Quentinstwin", "Tarantino"]),
-  star(["Weird", "Movie"],[["Lara", "Bagdasarian"],["Michael", "Madsen"]], ["Abhijeet", "Tarantino"]),
-  star(["Kill", "Bill", "Three"],[["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
-  star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"],["Quentin", "Tarantino"]],["David","Lynch"]),
-  star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"], ["Richard", "Pryor"]],["David","Lynch"]),
-  star(["Pulp","Fiction"], [["John","Travolta"],["Uma", "Thurman"]], ["Quentin", "Tarantino"])]).
+% database([ % start with these movies Movie, Actor list, director
+%   star(["Kill", "Bill"],[["Uma", "Thurman"],["Michael", "Madsen"]], ["Quentinstwin", "Tarantino"]),
+%   star(["Weird", "Movie"],[["Lara", "Bagdasarian"],["Michael", "Madsen"]], ["Abhijeet", "Tarantino"]),
+%   star(["Kill", "Bill", "Three"],[["Uma", "Thurman"]], ["Quentin", "Tarantino"]),
+%   star(["Mulholland", "Drive"],[["Justin", "Theroux"], ["Naomi", "Watts"],["Quentin", "Tarantino"]],["David","Lynch"]),
+%   star(["Lost", "Highway"],[["Balthazar", "Getty"], ["Bill", "Pullman"], ["Richard", "Pryor"]],["David","Lynch"]),
+%   star(["Pulp","Fiction"], [["John","Travolta"],["Uma", "Thurman"]], ["Quentin", "Tarantino"])]).
+:- consult('stringops.pl').
+:- consult('query.pl').
+:- consult('token.pl').
+:- consult('db.pl').
+
 hi :- database(X), start(X).
 start(Database) :-
   ask(Input),
@@ -34,5 +39,5 @@ control(Input, Database) :-
 % answer(InputList, Database,
 %   "Thanks for your information!", [direct(Movie, Person)|Database]) :-
 %   append(Person, ["directs"|Movie], InputList).
-answer(WordList, Database, "Enter another question or 'bye' to quit.", Database) :-
+answer(WordList, Database, "Enter another question or 'bye' to quit.\n", Database) :-
   tokenize(WordList,Result,Database), writeln(Result).

@@ -20,8 +20,8 @@ attribute(randomInfo).
 
 tokenize(WordList, Result, Database) :-
   find_query_attributes(WordList, QAttr,PAttr, Suffix),
-  tokenize_string_list(WordList, [], Tokens, Database, QAttr, PAttr, Suffix, Result),
-  eliminate_double_negation(Tokens, R).
+  eliminate_double_negation(WordList, WordListNoDoubleNegs),
+  tokenize_string_list(WordListNoDoubleNegs, [], Tokens, Database, QAttr, PAttr, Suffix, Result).
 
 %-------------------------------------------------------------------------------
 /*
@@ -34,18 +34,17 @@ tokenize(WordList, Result, Database) :-
 */
 tokenize_string_list([],Accumulated,[Result],Database,QAttr, PAttr, Suffix,Message) :-
   finds_closest_in_database(Accumulated, Result, Database, QAttr, PAttr, Suffix,Message).
-tokenize_string_list([],_,[],_, _,_,_,_) :- !.
+tokenize_string_list([],_,[],_, _,_,_,_).
 tokenize_string_list([Word|Rest], Accumulated, [Result,Token|RestTokens],Database, QAttr, PAttr,Suffix,Message) :-
   negToken(Word, Token),
   finds_closest_in_database(Accumulated, Result, Database, QAttr, PAttr,Suffix,Message),
   tokenize_string_list(Rest, [], RestTokens, Database, QAttr, PAttr,Suffix,Message).
 tokenize_string_list([Word|Rest], _, [Token|RestTokens],Database, QAttr, PAttr,Suffix,Message) :-
   negToken(Word, Token),
-  tokenize_string_list(Rest, [], RestTokens, Database, QAttr, PAttr,Suffix,Message),!.
+  tokenize_string_list(Rest, [], RestTokens, Database, QAttr, PAttr,Suffix,Message).
 tokenize_string_list([Word|Rest], Accumulated, RestTokens, Database, QAttr, PAttr,Suffix,Message) :-
   append(Accumulated, [Word], NewlyAccumulated),
-  tokenize_string_list(Rest, NewlyAccumulated, RestTokens, Database, QAttr, PAttr,Suffix,Message),!.
-
+  tokenize_string_list(Rest, NewlyAccumulated, RestTokens, Database, QAttr, PAttr,Suffix,Message).
 
 %-------------------------------------------------------------------------------
 
@@ -77,12 +76,12 @@ finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Mess
   not(exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)),
   one_word_exists_in_database_right(WordList, Result2, Database),
   one_word_exists_in_database_left(WordList, Result2, Database), PAttr = star, concat_string_list(Result2,ResString),
-  findall(First,(member(star(Movie, X, Director), Database),member([First,ResString],X)),S), 
+  findall(First,(member(star(Movie, X, Director), Database),member([First,ResString],X)),S),
   sort(S,Less),write(Less), len(Less, L),write("\nDid you know there are "),
   write(L), write(" "), write(PAttr), write("s you might have meant? \nWhich of these "), write(PAttr), write("s did you mean: "), format_string_list(Less,ToStr),
   write(ToStr), write("?  "), read_line_to_string(user_input,In), ((member(In, Less), writeln("Thanks! Showing results for "), write(In), write(" "), write(ResString),
     write(": "),append(WordList,[In,ResString],NWL),finds_closest_in_database(NWL, [In, ResString], Database, QAttr, PAttr, Suffix, Message), writeln(Message));
-     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))). 
+     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))).
 
 finds_closest_in_database(WordList, Result, Database,QAttr, PAttr,Suffix, Message) :-
   append([_], ShorterWordList, WordList),
@@ -97,7 +96,7 @@ matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole):- not(PAttr = Valid
   NewRole = ValidRoles.
 matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole) :- not(PAttr = ValidRoles),PAttr = notspecified, ValidRoles = stardirector,
  concat_string_list(ProvidedInfo, Strinfo), write(Strinfo), write(" has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: "),
-  read_line_to_string(user_input,In), setRole(In,NewRole). 
+  read_line_to_string(user_input,In), setRole(In,NewRole).
 
 setRole(In,NewRole):- In = "a", NewRole = star.
 setRole(In,NewRole):- In = "b", NewRole = director.
@@ -105,36 +104,36 @@ setRole(In,NewRole):- In = "c", NewRole = stardirector.
 setRole(In,NewRole):- In \="a",In\="b",In\="c", NewRole = stardirector, writeln("Didn't quite catch that. We're showing you all the results anyway.").
 
 /* Plural movie requested */
-attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles, ProvidedInfo) :- 
+attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles, ProvidedInfo) :-
   QAttr = movie, Suffix = "s", matchesOrNotProvided(PAttr,ValidRoles, ProvidedInfo, NewRole),
   M = "You might be looking for the movies", find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database),
-  concat_string_list_of_lists(Movies,Comb), 
+  concat_string_list_of_lists(Movies,Comb),
   concat_string_list([M,Comb], Message).
 
 /* Singular movie requested */
-attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles,ProvidedInfo) :- 
+attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles,ProvidedInfo) :-
   QAttr = 'movie', Suffix \= "s", matchesOrNotProvided(PAttr,ValidRoles, ProvidedInfo, NewRole),
   M = "You might be looking for the movie",
   find_all_movies_by_type(NewRole,ProvidedInfo, MList, Database), random_member(Movie, MList),
   concat_string_list(Movie, MString),
   concat_string_list([M,MString], Message).
 
-attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles,ProvidedInfo) :- 
-  QAttr = star, nth1(2, RelevantData, Res), 
-  M = "You might be looking for these stars:", 
-  concat_string_list_of_lists(Res, Comb), 
+attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles,ProvidedInfo) :-
+  QAttr = star, nth1(2, RelevantData, Res),
+  M = "You might be looking for these stars:",
+  concat_string_list_of_lists(Res, Comb),
   concat_string_list([M,Comb],Message).
-attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles,ProvidedInfo) :- 
-  QAttr = director,nth1(3, RelevantData, Res), 
-  M = "The director you're looking for is", 
-  concat_string_list(Res,Comb), concat_string_list([M,Comb], 
+attributeFromList(RelevantData, Database, QAttr, PAttr, Res, Message,Suffix, ValidRoles,ProvidedInfo) :-
+  QAttr = director,nth1(3, RelevantData, Res),
+  M = "The director you're looking for is",
+  concat_string_list(Res,Comb), concat_string_list([M,Comb],
   Message).
 
 person_both(Person,Database) :- member(star(M,S,Person),Database), member(star(M2,S2,D),Database),member(Person,S2).
 
 exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
-  member(star(WordList, Stars, Director), Database), 
-  RelevantData = [WordList, Stars, Director], 
+  member(star(WordList, Stars, Director), Database),
+  RelevantData = [WordList, Stars, Director],
   ProvidedInfo = WordList,
   ValidRoles = movie.
 exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
@@ -159,8 +158,8 @@ exists_in_database_left(WordList, Result, Database,RelevantData, ValidRoles,Prov
   exists_in_database_left(ShorterWordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo).
 
 exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
-  member(star(WordList, Stars, Director), Database), 
-  RelevantData = [WordList, Stars, Director], 
+  member(star(WordList, Stars, Director), Database),
+  RelevantData = [WordList, Stars, Director],
   ProvidedInfo = WordList,
   ValidRoles = movie.
 exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
@@ -224,9 +223,11 @@ negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd) :- member(Y, WordList), 
 %pattern2()
 /*selectchk(X, WordList, NewList), */
 %----------------- Negation handling -------------------------------------------
- 
+
 eliminate_double_negation([],[]).
-eliminate_double_negation([neg,neg|Rest],Result) :-
+eliminate_double_negation([Word1,Word2|Rest],Result) :-
+  negToken(Word1,_),
+  negToken(Word2,_),
   eliminate_double_negation(Rest, Result).
 eliminate_double_negation([Word|Rest],[Word|Result]) :-
   eliminate_double_negation(Rest, Result).
