@@ -64,11 +64,13 @@ finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Mess
   not(exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)),
   one_word_exists_in_database_right(WordList, Result2, Database),
   one_word_exists_in_database_left(WordList, Result2, Database), PAttr = director, concat_string_list(Result2,ResString),
-  findall(First,(member(star(_, _, [First, ResString]), Database)),S), sort(S,Less),write(Less), len(Less, L),write("\nDid you know there are "),
+  findall(First,(member(star(_, _, [First, ResString]), Database)),S), sort(S,Less),len(Less, L),((L = 0, write("Sorry, we didn't find any movies with that "), 
+    write(PAttr), write("\n"))
+    ;(L \= 0, write("\nDid you know there are "),
   write(L), write(" "), write(PAttr), write("s you might have meant? \nWhich of these "), write(PAttr), write("s did you mean: "), format_string_list(Less,ToStr),
   write(ToStr), write("?  "), read_line_to_string(user_input,In), ((member(In, Less), writeln("Thanks! Showing results for "), write(In), write(" "), write(ResString),
     write(": "),append(WordList,[In,ResString],NWL),finds_closest_in_database(NWL, [In, ResString], Database, QAttr, PAttr, Suffix, Message), writeln(Message));
-     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))).
+     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))))).
 
 /* Star last names */
 finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Message) :-
@@ -77,11 +79,13 @@ finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Mess
   one_word_exists_in_database_right(WordList, Result2, Database),
   one_word_exists_in_database_left(WordList, Result2, Database), PAttr = star, concat_string_list(Result2,ResString),
   findall(First,(member(star(Movie, X, Director), Database),member([First,ResString],X)),S),
-  sort(S,Less),write(Less), len(Less, L),write("\nDid you know there are "),
+  sort(S,Less), len(Less, L),((L = 0, write("Sorry, we didn't find any movies with that "), 
+    write(PAttr), write("\n"));
+  (write("\nDid you know there are "),
   write(L), write(" "), write(PAttr), write("s you might have meant? \nWhich of these "), write(PAttr), write("s did you mean: "), format_string_list(Less,ToStr),
   write(ToStr), write("?  "), read_line_to_string(user_input,In), ((member(In, Less), writeln("Thanks! Showing results for "), write(In), write(" "), write(ResString),
     write(": "),append(WordList,[In,ResString],NWL),finds_closest_in_database(NWL, [In, ResString], Database, QAttr, PAttr, Suffix, Message), writeln(Message));
-     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))).
+     (not(member(In, Less)), write("Sorry, we can't tell which "), write(PAttr), write(" you are looking for."))))).
 
 finds_closest_in_database(WordList, Result, Database,QAttr, PAttr,Suffix, Message) :-
   append([_], ShorterWordList, WordList),
@@ -216,7 +220,7 @@ pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower
   nth1(AInd, WordList, X),AInd > QInd, member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd>AInd.
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower(QW,QWL),
   qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
-  nth1(AInd, WordList, X),AInd > QInd, not(negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd)),writeln("HI"), ResultP = notspecified.
+  nth1(AInd, WordList, X),AInd > QInd, not(negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd)), ResultP = notspecified.
 
 negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd) :- member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd>AInd.
 %Who ... attribute

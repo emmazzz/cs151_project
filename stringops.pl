@@ -2,6 +2,10 @@
     String helper functions for tokenization.
 */
 
+not_inst(Var):-
+  \+(\+(Var=0)),
+  \+(\+(Var=1)).
+
 %Replace substring with string util function for tokenization
 replace_word(In, ToRepl, Repl, Out) :- atomic_list_concat(Split, ToRepl, In), 
     atomic_list_concat(Split, Repl, Out).
@@ -18,7 +22,7 @@ rmvfrm_word(In, Out) :-
 good_cs([], []).
 good_cs([Char | CharsIn], [Char | CharsOut]) :-
     (Char @>= 'A', Char @=< 'Z'; %only keep alphanums and spaces which we will tokenize by
-    Char @>= 'a', Char @=< 'z'; Char @>= '0', Char @=< '9';
+    Char @>= 'a', Char @=< 'z'; Char @>= '0', Char @=< '9'; CHAR = ':'; CHAR = '.';
     Char = ' '), good_cs(CharsIn, CharsOut).
 good_cs([_ | CharsIn], CharsOut) :-
     good_cs(CharsIn, CharsOut).

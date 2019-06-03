@@ -24,5 +24,5 @@ control(Input, Database) :-
   writeln(Answer),flush,
   start(NewDatabase).
 
-answer(WordList, Database, "Enter another question or 'bye' to quit.\n", Database) :-
-  tokenize(WordList,Result,Database), writeln(Result).
+answer(WordList, Database, "Enter another question or 'bye' to quit.\n", Database) :- 
+  tokenize(WordList,Result,Database), ((not_inst(Result), writeln("Sorry, we couldn't understand what you said; please try again.")); (not(not_inst(Result)),writeln(Result))).

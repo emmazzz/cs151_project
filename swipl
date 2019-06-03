@@ -1,0 +1,5 @@
+swipl
+[query]. [simple]. [stringops]. [token].
+hi.
+What movies did Tarantino direct?
+ [stringops]. [token]. [query]. [simple].
