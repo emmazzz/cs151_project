@@ -1,0 +1,40 @@
+
+/*
+  split_string_into_words: only works for lower case letters and numbers though...
+*/
+split_string_into_words(S, Res) :-
+    evaluate(readstringall(S),X) & list_stringify(X, Res)
+list_stringify([],[])
+list_stringify(cons(X, L), cons(S, SL)) :-
+    list_stringify(L, SL) &
+    evaluate(stringify(X),S)
+
+/*
+  query.pl functions
+*/
+find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
+	same(NewRole,stardirector) & find_all_movies_by_person(AttrList, Movies, Database)
+
+find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
+	same(NewRole,star) &
+	find_all_movies_by_star(ProvidedInfo, Movies, Database)
+
+find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
+	same(NewRole,director) &
+	find_all_movies_by_director(ProvidedInfo, Movies, Database)
+
+find_all_movies_by_person(Person, Movies, Database) :-
+  find_all_movies_by_star(Person, StarredMovies, Database) &
+  find_all_movies_by_director(Person, DirectedMovies, Database) &
+  evaluate(append(StarredMovies, DirectedMovies), Movies)
+
+find_all_movies_by_star(Star, Movies, Database) :-
+  evaluate(setofall(Movie,find_one_movie_by_star(Star, Movie, Database)), Movies)
+find_one_movie_by_star(Star, Movie, Database) :-
+  member(star(Movie, Stars, _), Database) &
+  member(Star, Stars)
+
+find_all_movies_by_director(Director, Movies, Database) :-
+  evaluate(setofall(Movie,find_one_movie_by_director(Director, Movie, Database)), Movies)
+find_one_movie_by_director(Director, Movie, Database) :-
+  member(star(Movie, _, Director), Database)

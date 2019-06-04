@@ -10,7 +10,7 @@
 
 /* movies by person; can't tell if star or director provided */
 find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
-	NewRole = stardirector, find_all_movies_by_person(AttrList, Movies, Database).
+	NewRole = stardirector, find_all_movies_by_person(ProvidedInfo, Movies, Database).
 
 /* movies by star */
 find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
@@ -22,6 +22,7 @@ find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
 	NewRole = director,
 	find_all_movies_by_director(ProvidedInfo, Movies, Database).
 
+find_all(Person, Movies) :- database(D), find_all_movies_by_person(Person, Movies, D).
 /* specific find_all_movies_by_x definitions */
 find_all_movies_by_person(Person, Movies, Database) :-
   find_all_movies_by_star(Person, StarredMovies, Database),

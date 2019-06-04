@@ -7,7 +7,7 @@ not_inst(Var):-
   \+(\+(Var=1)).
 
 %Replace substring with string util function for tokenization
-replace_word(In, ToRepl, Repl, Out) :- atomic_list_concat(Split, ToRepl, In), 
+replace_word(In, ToRepl, Repl, Out) :- atomic_list_concat(Split, ToRepl, In),
     atomic_list_concat(Split, Repl, Out).
 
 %Remove illegal characters from strings (for our purposes non alphanumeric with exception of spaces which are okay)
@@ -18,11 +18,11 @@ rmvfrm_word(In, Out) :-
     atom_chars(In, InC),
     good_cs(InC, OutC),
     atom_chars(Out, OutC).
-    
+
 good_cs([], []).
 good_cs([Char | CharsIn], [Char | CharsOut]) :-
     (Char @>= 'A', Char @=< 'Z'; %only keep alphanums and spaces which we will tokenize by
-    Char @>= 'a', Char @=< 'z'; Char @>= '0', Char @=< '9'; CHAR = ':'; CHAR = '.';
+    Char @>= 'a', Char @=< 'z'; Char @>= '0', Char @=< '9'; Char = ':'; Char = '.';
     Char = ' '), good_cs(CharsIn, CharsOut).
 good_cs([_ | CharsIn], CharsOut) :-
     good_cs(CharsIn, CharsOut).
@@ -32,7 +32,7 @@ good_cs([_ | CharsIn], CharsOut) :-
     Usage: concat([str1,str2,...,stri], combinedstring)
             note that combined string cannot also be contained in StrList
 */
-concat(StrList, Res) :- %Res can't be contained in 
+concat(StrList, Res) :- %Res can't be contained in
     maplist(atom_chars, StrList, Lists),
     append(Lists, List),
     atom_chars(Res, List).
@@ -45,9 +45,9 @@ concat_string_list([Head|Tail], Result) :-
   string_concat(Head, " ", HeadSpace),
   string_concat(HeadSpace, Rest, Result).
 
-/* 
-    Gets comma and and-formatted string from list of strings (i.e. not nested; 
-    see concat_string_list_of_lists for formatting nested lists) 
+/*
+    Gets comma and and-formatted string from list of strings (i.e. not nested;
+    see concat_string_list_of_lists for formatting nested lists)
 */
 format_string_list([],"").
 format_string_list([Head], Head).
@@ -68,7 +68,7 @@ len([_|N],T,L) :- NT is T+1, len(N, NT, L).
 */
 concat_string_list_of_lists([],"").
 concat_string_list_of_lists([Head], H):- concat_string_list(Head, H).
-concat_string_list_of_lists([First,Second],H):- concat_string_list(First,F), 
+concat_string_list_of_lists([First,Second],H):- concat_string_list(First,F),
     concat_string_list(Second, S), concat_string_list([F, "and", S],H).
 concat_string_list_of_lists([Head|Tail], Result) :-
   concat_string_list_of_lists(Tail, Rest),
