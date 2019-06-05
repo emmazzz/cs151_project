@@ -36,11 +36,11 @@ tokenize_string_list([],Accumulated,[Result],Database,QAttr, PAttr, Suffix,Messa
   finds_closest_in_database(Accumulated, Result, Database, QAttr, PAttr, Suffix,Message).
 tokenize_string_list([],_,[],_, _,_,_,_).
 tokenize_string_list([Word|Rest], Accumulated, [Result,Token|RestTokens],Database, QAttr, PAttr,Suffix,Message) :-
-  negToken(Word, Token),
+  token(Word, Token, _),
   finds_closest_in_database(Accumulated, Result, Database, QAttr, PAttr,Suffix,Message),
   tokenize_string_list(Rest, [], RestTokens, Database, QAttr, PAttr,Suffix,Message).
 tokenize_string_list([Word|Rest], _, [Token|RestTokens],Database, QAttr, PAttr,Suffix,Message) :-
-  negToken(Word, Token),
+  token(Word, Token, _),
   tokenize_string_list(Rest, [], RestTokens, Database, QAttr, PAttr,Suffix,Message).
 tokenize_string_list([Word|Rest], Accumulated, RestTokens, Database, QAttr, PAttr,Suffix,Message) :-
   append(Accumulated, [Word], NewlyAccumulated),
@@ -62,8 +62,7 @@ finds_closest_in_database(WordList, Result, Database,QAttr, PAttr,Suffix, Messag
 finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Message) :-
   not(exists_in_database_left(WordList, Result, Database,RelevantData,ValidRoles, ProvidedInfo)), %Last param is ProvidedInfo for future use
   not(exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)),
-  one_word_exists_in_database_right(WordList, Result2, Database),
-  one_word_exists_in_database_left(WordList, Result2, Database), PAttr = director, concat_string_list(Result2,ResString),
+  one_word_exists_in_database(WordList, Result2, Database),PAttr = director, concat_string_list(Result2,ResString),
   findall(First,(member(star(_, _, [First, ResString]), Database)),S), sort(S,Less),len(Less, L),((L = 0, write("Sorry, we didn't find any movies with that "),
     write(PAttr), write("\n"))
     ;(L \= 0, write("\nDid you know there are "),
@@ -76,8 +75,7 @@ finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Mess
 finds_closest_in_database(WordList, Result2, Database, QAttr, PAttr,Suffix, Message) :-
   not(exists_in_database_left(WordList, Result, Database,RelevantData,ValidRoles, ProvidedInfo)),
   not(exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)),
-  one_word_exists_in_database_right(WordList, Result2, Database),
-  one_word_exists_in_database_left(WordList, Result2, Database), PAttr = star, concat_string_list(Result2,ResString),
+  one_word_exists_in_database(WordList, Result2, Database),PAttr = star, concat_string_list(Result2,ResString),
   findall(First,(member(star(_, X, _), Database),member([First,ResString],X)),S),
   sort(S,Less), len(Less, L),((L = 0, write("Sorry, we didn't find any movies with that "),
     write(PAttr), write("\n"));
@@ -188,6 +186,11 @@ exists_in_database_right(WordList, Result, Database, RelevantData, ValidRoles,Pr
   exists_in_database_right(ShorterWordList, Result, Database, RelevantData, ValidRoles,ProvidedInfo).
 
 
+one_word_exists_in_database(WordList, Result, Database) :-
+  one_word_exists_in_database_left(WordList, Result, Database).
+
+one_word_exists_in_database(WordList, Result, Database) :-
+  one_word_exists_in_database_right(WordList, Result, Database).
 
 one_word_exists_in_database_left(WordList, WordList, Database) :-
   member(star(_, X, _), Database),nth1(1,WordList,Name),member([_,Name],X).
@@ -207,18 +210,30 @@ one_word_exists_in_database_right(WordList, Result, Database) :-
 %---------------- Query question patterns ------------------------------------
 
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern1(WordList, QAttr, PAttr, Suffix).
+find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern2(WordList, QAttr, PAttr, Suffix).
 %find_question_attribute(WordList, Attr) :- pattern2(WordList, Attr)
-find_query_attributes(WordList, QAttr, PAttr, Suffix) :-  not(pattern1(WordList, QAttr, PAttr, Suffix)),
+find_query_attributes(WordList, QAttr, PAttr, Suffix) :-
+  not(pattern1(WordList, QAttr, PAttr, Suffix)),
+  not(pattern2(WordList, QAttr, PAttr, Suffix)),
   QAttr = "randomInfo". %all else fails choose a random one not provided info
 
 %Give ... attribute; e.g. Give me the movie with Bill Pullman
 qWordPat1("give").
 qWordPat1("who").
 qWordPat1("what").
+qWordPat1("show").
+
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower(QW,QWL),
   qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
   nth1(AInd, WordList, X),AInd > QInd, member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd>AInd.
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower(QW,QWL),
+  qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
+  nth1(AInd, WordList, X),AInd > QInd, not(negPatternHelper(_,WordList,ResultP,_,WordList,AInd)), ResultP = notspecified.
+
+pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower(QW,QWL),
+  qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
+  nth1(AInd, WordList, X),AInd > QInd, member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd<AInd.
+pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower(QW,QWL),
   qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
   nth1(AInd, WordList, X),AInd > QInd, not(negPatternHelper(_,WordList,ResultP,_,WordList,AInd)), ResultP = notspecified.
 
