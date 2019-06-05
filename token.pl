@@ -18,6 +18,7 @@ attribute(director).
 attribute(randomInfo).
 %attribute(date). may be supported in future iterations
 
+% Emma
 tokenize(WordList, Result, Database) :-
   find_query_attributes(WordList, QAttr,PAttr, Suffix),
   eliminate_double_negation(WordList, WordListNoDoubleNegs),
@@ -32,6 +33,7 @@ tokenize(WordList, Result, Database) :-
   all be accumulated until the end and passed into finds_closest_in_database to
   find the closest matched element in the database, which is ["Kill", "Bill"]
 */
+% Emma
 tokenize_string_list([],Accumulated,[Result],Database,QAttr, PAttr, Suffix,Message) :-
   finds_closest_in_database(Accumulated, Result, Database, QAttr, PAttr, Suffix,Message).
 tokenize_string_list([],_,[],_, _,_,_,_).
@@ -47,7 +49,7 @@ tokenize_string_list([Word|Rest], Accumulated, RestTokens, Database, QAttr, PAtt
   tokenize_string_list(Rest, NewlyAccumulated, RestTokens, Database, QAttr, PAttr,Suffix,Message).
 
 %-------------------------------------------------------------------------------
-
+% Emma
 finds_closest_in_database(WordList, Result, Database, QAttr, PAttr,Suffix, Message) :-
   exists_in_database_left(WordList, Result, Database,RelevantData,ValidRoles, ProvidedInfo), %Last param is ProvidedInfo for future use
   attributeFromList(RelevantData, Database, QAttr, PAttr, _, Message, Suffix,ValidRoles,ProvidedInfo).
@@ -92,6 +94,7 @@ finds_closest_in_database(WordList, Result, Database,QAttr, PAttr, Suffix,Messag
   append(ShorterWordList, [_], WordList),
   finds_closest_in_database(ShorterWordList, Result, Database,QAttr, PAttr,Suffix, Message).
 
+% lara
 matchesOrNotProvided(PAttr,ValidRoles, _, NewRole) :- PAttr=ValidRoles, NewRole = PAttr.
 matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- not(PAttr = ValidRoles), not(PAttr = notspecified), ValidRoles = stardirector, NewRole = PAttr.
 matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- not(PAttr = ValidRoles), PAttr = notspecified, not(ValidRoles = stardirector),
@@ -100,11 +103,13 @@ matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole) :- not(PAttr = Vali
  concat_string_list(ProvidedInfo, Strinfo), write(Strinfo), write(" has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: "),
   read_line_to_string(user_input,In), setRole(In,NewRole).
 
+% lara
 setRole(In,NewRole):- In = "a", NewRole = star.
 setRole(In,NewRole):- In = "b", NewRole = director.
 setRole(In,NewRole):- In = "c", NewRole = stardirector.
 setRole(In,NewRole):- In \="a",In\="b",In\="c", NewRole = stardirector, writeln("Didn't quite catch that. We're showing you all the results anyway.").
 
+% lara
 /* Plural movie requested */
 attributeFromList(_, Database, QAttr, PAttr, _, Message,Suffix, ValidRoles, ProvidedInfo) :-
   QAttr = movie, Suffix = "s", matchesOrNotProvided(PAttr,ValidRoles, ProvidedInfo, NewRole),
@@ -131,8 +136,10 @@ attributeFromList(RelevantData, _, QAttr, _, Res, Message, _, _, _) :-
   concat_string_list(Res,Comb), concat_string_list([M,Comb],
   Message).
 
+% lara
 person_both(Person,Database) :- member(star(_,_,Person),Database), member(star(_,S2,_),Database),member(Person,S2).
 
+% emma
 exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   member(star(WordList, Stars, Director), Database),
   RelevantData = [WordList, Stars, Director],
@@ -185,13 +192,14 @@ exists_in_database_right(WordList, Result, Database, RelevantData, ValidRoles,Pr
   append(ShorterWordList, [_], WordList),
   exists_in_database_right(ShorterWordList, Result, Database, RelevantData, ValidRoles,ProvidedInfo).
 
-
+% emma
 one_word_exists_in_database(WordList, Result, Database) :-
   one_word_exists_in_database_left(WordList, Result, Database).
 
 one_word_exists_in_database(WordList, Result, Database) :-
   one_word_exists_in_database_right(WordList, Result, Database).
 
+  % emma
 one_word_exists_in_database_left(WordList, WordList, Database) :-
   member(star(_, X, _), Database),nth1(1,WordList,Name),member([_,Name],X).
 one_word_exists_in_database_left(WordList, WordList, Database) :-
@@ -200,6 +208,7 @@ one_word_exists_in_database_left(WordList, Result, Database) :-
   append([_], ShorterWordList, WordList),
   one_word_exists_in_database_left(ShorterWordList, Result, Database).
 
+  % emma
 one_word_exists_in_database_right(WordList, WordList, Database) :-
   member(star(_, X, _), Database),nth1(1,WordList,Name),member([_,Name],X).
 one_word_exists_in_database_right(WordList, WordList, Database) :-
@@ -209,6 +218,7 @@ one_word_exists_in_database_right(WordList, Result, Database) :-
   one_word_exists_in_database_right(ShorterWordList, Result, Database).
 %---------------- Query question patterns ------------------------------------
 
+% lara
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern1(WordList, QAttr, PAttr, Suffix).
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern2(WordList, QAttr, PAttr, Suffix).
 %find_question_attribute(WordList, Attr) :- pattern2(WordList, Attr)
@@ -217,12 +227,14 @@ find_query_attributes(WordList, QAttr, PAttr, Suffix) :-
   not(pattern2(WordList, QAttr, PAttr, Suffix)),
   QAttr = "randomInfo". %all else fails choose a random one not provided info
 
+% lara
 %Give ... attribute; e.g. Give me the movie with Bill Pullman
 qWordPat1("give").
 qWordPat1("who").
 qWordPat1("what").
 qWordPat1("show").
 
+% lara
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList),string_lower(QW,QWL),
   qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
   nth1(AInd, WordList, X),AInd > QInd, member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd>AInd.
@@ -242,7 +254,7 @@ negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd) :- member(Y, WordList), 
 %pattern2()
 /*selectchk(X, WordList, NewList), */
 %----------------- Negation handling -------------------------------------------
-
+% emma
 eliminate_double_negation([],[]).
 eliminate_double_negation([Word1,Word2|Rest],Result) :-
   negToken(Word1,_),
@@ -252,7 +264,7 @@ eliminate_double_negation([Word|Rest],[Word|Result]) :-
   eliminate_double_negation(Rest, Result).
 
 %------------------- Tokens ---------------------------------------------------
-
+% lara
 % any word starting with "star" or "act"...?
 token(S, A, Suffix) :- string_lower(S, LowS), attribute_token(LowS, A, Suffix).
 attribute_token(S, star,Suffix) :- string_concat("star", Suffix, S).
