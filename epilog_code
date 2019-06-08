@@ -53,19 +53,17 @@ drop_last_elem_from_list(cons(X, L), cons(X, RL)) :-
    drop_last_elem_from_list(L, RL)
 
 /*
-  has_suffix(+Input, +Suffix)
+  has_suffix(-Prefix, +Suffix, +Input)
 */
-has_suffix(Input, Suffix) :-
-  evaluate(stringappend(".*",Suffix),Pattern) &
-  evaluate(matches(Input, Pattern), [A]) &
-  same(A, Input)
+has_suffix(Prefix, Suffix, Input) :-
+  evaluate(stringappend("(.*)",Suffix),Pattern) &
+  evaluate(matches(Input, Pattern), [A,Prefix]) & same(A, Input)
 /*
-  has_prefix(+Input, +Prefix)
+  has_prefix(+Prefix, -Suffix, +Input)
 */
-has_prefix(Input, Prefix) :-
-  evaluate(stringappend(Prefix, ".*"),Pattern) &
-  evaluate(matches(Input, Pattern), [A]) &
-  same(A, Input)
+has_prefix(Prefix, Suffix, Input) :-
+  evaluate(stringappend(Prefix, "(.*)"),Pattern) &
+  evaluate(matches(Input, Pattern), [A,Suffix]) & same(A, Input)
 
 
 /*
@@ -78,7 +76,7 @@ has_prefix(Input, Prefix) :-
   find_all_movies_by_type(+Role, +ProvidedInfo, -Movies, +Database)
 */
 find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
-	same(NewRole,stardirector) & find_all_movies_by_person(AttrList, Movies, Database)
+	same(NewRole,stardirector) & find_all_movies_by_person(ProvidedInfo, Movies, Database)
 
 find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
 	same(NewRole,star) &
@@ -120,6 +118,40 @@ find_one_movie_by_director(Director, Movie, Database) :-
 ================================================================================
 */
 
+tokenize(WordList, Result, Database) :-
+  find_query_attributes(WordList, QAttr,PAttr, Suffix) &
+  eliminate_double_negation(WordList, WordListNoDoubleNegs) &
+  tokenize_string_list(WordListNoDoubleNegs, [], _, Database, QAttr, PAttr, Suffix, Result)
+
+tokenize_string_list([],Accumulated,[Result],Database,QAttr, PAttr, Suffix,Message) :-
+  finds_closest_in_database(Accumulated, Result, Database, QAttr, PAttr, Suffix,Message)
+tokenize_string_list(cons(Word,Rest), Accumulated, cons(Result,cons(Token,RestTokens)),Database, QAttr, PAttr,Suffix,Message) :-
+  token(Word, Token, _) &
+  finds_closest_in_database(Accumulated, Result, Database, QAttr, PAttr,Suffix,Message) &
+  tokenize_string_list(cons(Word,Rest), [], RestTokens, Database, QAttr, PAttr,Suffix,Message)
+tokenize_string_list(cons(Word,Rest), _, cons(Token, RestTokens),Database, QAttr, PAttr,Suffix,Message) :-
+  token(Word, Token, _) &
+  tokenize_string_list(Rest, [], RestTokens, Database, QAttr, PAttr,Suffix,Message)
+tokenize_string_list(cons(Word,Rest), Accumulated, RestTokens, Database, QAttr, PAttr,Suffix,Message) :-
+  evaluate(append(Accumulated, [Word]), NewlyAccumulated) &
+  tokenize_string_list(Rest, NewlyAccumulated, RestTokens, Database, QAttr, PAttr,Suffix,Message)
+
+finds_closest_in_database(WordList, Result, Database, QAttr, PAttr,Suffix, Message) :-
+  exists_in_database_left(WordList, Result, Database,RelevantData,ValidRoles, ProvidedInfo) &
+  attributeFromList(RelevantData, Database, QAttr, PAttr, _, Message, Suffix,ValidRoles,ProvidedInfo)
+
+finds_closest_in_database(WordList, Result, Database,QAttr, PAttr,Suffix, Message) :-
+  exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo) &
+  attributeFromList(RelevantData, Database, QAttr, PAttr, _, Message,Suffix, ValidRoles,ProvidedInfo)
+
+finds_closest_in_database(cons(_, ShorterWordList), Result, Database,QAttr, PAttr,Suffix, Message) :-
+  finds_closest_in_database(ShorterWordList, Result, Database,QAttr, PAttr,Suffix, Message)
+
+finds_closest_in_database(WordList, Result, Database,QAttr, PAttr, Suffix,Message) :-
+  drop_last_elem_from_list(WordList, ShorterWordList) &
+  finds_closest_in_database(ShorterWordList, Result, Database,QAttr, PAttr,Suffix, Message)
+
+
 /*
   exists_in_database_left(+WordList, -Result, +Database, -RelevantData, -ValidRole, -ProvidedInfo)
   check if a suffix of WordList exists in the database and extract information from it.
@@ -127,8 +159,8 @@ find_one_movie_by_director(Director, Movie, Database) :-
   calling exists_in_database_left on ["some", "other", "strings", "James","Cameron"]
   will retrieve ["James","Cameron"].
 */
-exists_in_database_left(WordList, WordList, Database,RelevantData, stardirector,ProvidedInfo) :-
-  exists_in_database(WordList, Database,RelevantData, stardirector,ProvidedInfo)
+exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+  exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo)
 
 exists_in_database_left(cons(_, ShorterWordList), Result, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   exists_in_database_left(ShorterWordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)
@@ -140,8 +172,8 @@ exists_in_database_left(cons(_, ShorterWordList), Result, Database,RelevantData,
   calling exists_in_database_left on ["James","Cameron", "some", "other", "strings"]
   will retrieve ["James","Cameron"].
 */
-exists_in_database_right(WordList, WordList, Database,RelevantData, stardirector,ProvidedInfo) :-
-  exists_in_database(WordList, Database,RelevantData, stardirector,ProvidedInfo)
+exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+  exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo)
 
 exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   drop_last_elem_from_list(WordList, ShorterWordList) &
