@@ -5,19 +5,16 @@
 ================================================================================
 */
 
-concat_string_list(A, Result) :- same(stringifyall(A), Result)
-
+concat_string_list(A, Result) :- evaluate(stringifyall(A), Result)
 
 
 /*string concat*/
-string_concat(A,B,C) :- evaluate(stringappend(A,B),C)
-
+string_concat(A,B,C) :- evaluate(stringappend(A, " ",B),C)
 
 nth1(1, cons(Elem,_), Elem)
-nth1(Index, [_, Rest], Elem) :-
-  evaluate(min(Index,1),1)&
-  evaluate(Index,s(N))&
-  nth1(Index, Rest, Elem)
+nth1(Index, cons(_, Rest), Elem) :-
+  evaluate(min(1,Index),1)&
+  nth1(minus(Index,1), Rest, Elem)
 
 
 /*   Formats a list of lists in the following manner:
@@ -202,25 +199,25 @@ eliminate_double_negation(cons(Head,cons(Word,Rest)),cons(Head,cons(Word,Result)
 /* */
 
 matchesOrNotProvided(PAttr,ValidRoles, _, NewRole) :- same(PAttr, ValidRoles) & same(NewRole, PAttr)
-matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- ~same(PAttr, ValidRoles) & ~same(PAttr, notspecified) & same(ValidRoles, stardirector)
+matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- ~same(PAttr, ValidRoles) & ~same(notspecified,PAttr) & same(stardirector,ValidRoles)
   & same(NewRole, PAttr)
-matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- ~same(PAttr, ValidRoles)& same(PAttr, notspecified) & ~same(ValidRoles, stardirector) &
+matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- ~same(PAttr, ValidRoles)& same(notspecified,PAttr) & ~same(stardirector,ValidRoles) &
   same(NewRole, ValidRoles)
-matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole) :- ~same(PAttr, ValidRoles) & same(PAttr,notspecified) & same(ValidRoles = stardirector) &
- concat_string_list(ProvidedInfo, Strinfo)& same(OutputMessage1,Strinfo) & same(OutputMessage2, " has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: ") &
+matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole) :- ~same(PAttr, ValidRoles) & same(notspecified,PAttr) & same(stardirector, ValidRoles) &
+ concat_string_list(ProvidedInfo, Strinfo)& same(OutputMessage1,Strinfo) & same(" has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: ",OutputMessage2) &
   same(user_input,"my input message") & setRole(user_input,NewRole)
 
 
-setRole(In,NewRole):- same(In, "a") & same(NewRole, star)
-setRole(In,NewRole):- same(In, "b")& same(NewRole, director)
-setRole(In,NewRole):- same(In, "c")& same(NewRole, stardirector)
-setRole(In,NewRole):- ~same(In, "a") & ~same(In,"b") & ~same(In,"c")& same(NewRole, stardirector) & same(OutputMessage1,"Didn't quite catch that. We're showing you all the results anyway.")
+setRole(In,NewRole):- same("a",In) & same(star,NewRole)
+setRole(In,NewRole):- same("b",In)& same(director,NewRole)
+setRole(In,NewRole):- same("c",In)& same(stardirector,NewRole)
+setRole(In,NewRole):- ~same("a",In) & ~same("b",In) & ~same("c",In)& same(stardirector,NewRole) & same("Didn't quite catch that. We're showing you all the results anyway.",OutputMessage1)
 
 
 /* Plural movie requested */
 attributeFromList(_, Database, QAttr, PAttr, _, Message,Suffix, ValidRoles, ProvidedInfo) :-
-  same(QAttr, movie)& same(Suffix, "s") & matchesOrNotProvided(PAttr,ValidRoles, ProvidedInfo, NewRole) &
-  same(M, "You might be looking for the movies") & find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) &
+  same(movie,QAttr)& same("s",Suffix) & matchesOrNotProvided(PAttr,ValidRoles, ProvidedInfo, NewRole) &
+  same("You might be looking for the movies",M) & find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) &
   concat_string_list_of_lists(Movies,Comb) &
   concat_string_list([M,Comb], Message)
 
@@ -230,7 +227,7 @@ find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern2(WordList, QAtt
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :-
   ~pattern1(WordList, QAttr, PAttr, Suffix) &
   ~pattern2(WordList, QAttr, PAttr, Suffix) &
-  same(QAttr, "randomInfo") %all else fails choose a random one not provided info
+  same("randomInfo",QAttr) %all else fails choose a random one not provided info
 
 %Give ... attribute; e.g. Give me the movie with Bill Pullman
 qWordPat1("give")
@@ -241,32 +238,32 @@ qWordPat1("show")
 % lara
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL) &
   qWordPat1(QWL) & nth1(QInd, WordList, QW) & member(X, WordList) & token(X, ResultQ, Suffix)&
-  nth1(AInd, WordList, X) & evaluate(min(AInd,QInd, QInd)) & ~same(AInd,QInd) & member(Y, WordList)&  token(Y,ResultP,_)& nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd, AInd)) & ~same(PInd,AInd)
+  nth1(AInd, WordList, X) & evaluate(min(AInd,QInd) QInd) & ~same(AInd,QInd) & member(Y, WordList)&  token(Y,ResultP,_)& nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd),AInd) & ~same(PInd,AInd)
 
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL) &
   qWordPat1(QWL) & nth1(QInd, WordList, QW) &member(X, WordList) &token(X, ResultQ, Suffix) &
-  nth1(AInd, WordList, X) & evaluate(min(QInd,AInd,QInd)) & ~same(QInd,AInd) & ~negPatternHelper(_,WordList,ResultP,_,WordList,AInd)& same(ResultP = notspecified)
+  nth1(AInd, WordList, X) & evaluate(min(QInd,AInd),QInd) & ~same(QInd,AInd) & ~negPatternHelper(_,WordList,ResultP,_,WordList,AInd)& same(ResultP,notspecified)
 
 pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL)&
   qWordPat1(QWL) &nth1(QInd, WordList, QW)& member(X, WordList) & token(X, ResultQ, Suffix)&
-  nth1(AInd, WordList, X) & evaluate(min(QInd,AInd, QInd)) & ~same(QInd,AInd) & member(Y, WordList) &token(Y,ResultP,_) &nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd, PInd)) & ~same(PInd,AInd)
+  nth1(AInd, WordList, X) & evaluate(min(QInd,AInd), QInd) & ~same(QInd,AInd) & member(Y, WordList) &token(Y,ResultP,_) &nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd), PInd) & ~same(PInd,AInd)
 pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL) &
   qWordPat1(QWL)& nth1(QInd, WordList, QW)& member(X, WordList)& token(X, ResultQ, Suffix)&
-  nth1(AInd, WordList, X) & evaluate(min(QInd,AInd, QInd)) & ~same(QInd,AInd) & ~negPatternHelper(_,WordList,ResultP,_,WordList,AInd)& same(ResultP, notspecified)
+  nth1(AInd, WordList, X) & evaluate(min(QInd,AInd), QInd) & ~same(QInd,AInd) & ~negPatternHelper(_,WordList,ResultP,_,WordList,AInd)& same(notspecified,ResultP)
 
-negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd) :- member(Y, WordList) & token(Y,ResultP,_) & nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd, AInd)) & ~same(PInd,AInd)
+negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd) :- member(Y, WordList) & token(Y,ResultP,_) & nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd), AInd) & ~same(PInd,AInd)
 
 
 token(S, A, Suffix) :- string_lower(S, LowS) & attribute_token(LowS, A, Suffix)
 attribute_token(S, star,Suffix) :- string_concat("star", Suffix, S)
 attribute_token(S, star,Suffix) :- string_concat("act", Suffix, S)
 attribute_token(S, director,Suffix) :- string_concat("direct", Suffix, S)
-attribute_token(S, director,_) :- same(S,"by")
+attribute_token(S, director,_) :- same("by",S)
 attribute_token(S, director,Suffix) :- string_concat("filmmaker", Suffix, S)
 attribute_token(S, director,Suffix) :- string_concat("made", Suffix, S)
 attribute_token(S, director,Suffix) :- string_concat("mak", Suffix, S) %making, make
 attribute_token(S, movie, Suffix) :- string_concat("movie", Suffix, S) %movie, movies
-attribute_token(S, movie,Suffix) :-  ~same(S,"filmmaker")& string_concat("film", Suffix, S)
+attribute_token(S, movie,Suffix) :-  ~same("filmmaker",S)& string_concat("film", Suffix, S)
 attribute_token(S, movie,Suffix) :- string_concat("flick", Suffix, S)
 negToken("not", neg)
 negToken("no", neg)
