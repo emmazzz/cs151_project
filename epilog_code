@@ -7,6 +7,8 @@
 
 concat_string_list(A, Result) :- evaluate(stringifyall(A), Result)
 
+nth1(X,1,X!_)
+nth1(X, K, _!L) :- nth1(X, K1, L) & evaluate(plus(1,K1),K)
 
 /*string concat*/
 string_concat(A,B,C) :- evaluate(stringappend(A, " ",B),C)
