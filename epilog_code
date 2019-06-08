@@ -1,6 +1,13 @@
 
 /*
+================================================================================
+  utilities
+================================================================================
+*/
+
+/*
   split_string_into_words: only works for lower case letters and numbers though...
+  split_string_into_words(+String, -WordList)
 */
 split_string_into_words(S, Res) :-
     evaluate(readstringall(S),X) & list_stringify(X, Res)
@@ -10,7 +17,36 @@ list_stringify(cons(X, L), cons(S, SL)) :-
     evaluate(stringify(X),S)
 
 /*
+  drop_last_elem_from_list(+InputList, -ResultList)
+*/
+drop_last_elem_from_list([X], [])
+drop_last_elem_from_list(cons(X, L), cons(X, RL)) :-
+   drop_last_elem_from_list(L, RL)
+
+/*
+  has_suffix(+Input, +Suffix)
+*/
+has_suffix(Input, Suffix) :-
+  evaluate(stringappend(".*",Suffix),Pattern) &
+  evaluate(matches(Input, Pattern), [A]) &
+  same(A, Input)
+/*
+  has_prefix(+Input, +Prefix)
+*/
+has_prefix(Input, Prefix) :-
+  evaluate(stringappend(Prefix, ".*"),Pattern) &
+  evaluate(matches(Input, Pattern), [A]) &
+  same(A, Input)
+
+
+/*
+================================================================================
   query.pl functions
+================================================================================
+*/
+
+/*
+  find_all_movies_by_type(+Role, +ProvidedInfo, -Movies, +Database)
 */
 find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
 	same(NewRole,stardirector) & find_all_movies_by_person(AttrList, Movies, Database)
@@ -23,18 +59,110 @@ find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
 	same(NewRole,director) &
 	find_all_movies_by_director(ProvidedInfo, Movies, Database)
 
+/*
+  find_all_movies_by_person(+Person, -Movies, +Database)
+*/
 find_all_movies_by_person(Person, Movies, Database) :-
   find_all_movies_by_star(Person, StarredMovies, Database) &
   find_all_movies_by_director(Person, DirectedMovies, Database) &
   evaluate(append(StarredMovies, DirectedMovies), Movies)
 
+/*
+  find_all_movies_by_star(+Star, -Movies, +Database)
+*/
 find_all_movies_by_star(Star, Movies, Database) :-
   evaluate(setofall(Movie,find_one_movie_by_star(Star, Movie, Database)), Movies)
 find_one_movie_by_star(Star, Movie, Database) :-
   member(star(Movie, Stars, _), Database) &
   member(Star, Stars)
 
+/*
+  find_all_movies_by_director(+Director, -Movies, +Database)
+*/
 find_all_movies_by_director(Director, Movies, Database) :-
   evaluate(setofall(Movie,find_one_movie_by_director(Director, Movie, Database)), Movies)
 find_one_movie_by_director(Director, Movie, Database) :-
   member(star(Movie, _, Director), Database)
+
+
+/*
+================================================================================
+  token.pl functions
+================================================================================
+*/
+
+/*
+  exists_in_database_left(+WordList, -Result, +Database, -RelevantData, -ValidRole, -ProvidedInfo)
+  check if a suffix of WordList exists in the database and extract information from it.
+  for example, if ["James","Cameron"] exists in the database as a director, then
+  calling exists_in_database_left on ["some", "other", "strings", "James","Cameron"]
+  will retrieve ["James","Cameron"].
+*/
+exists_in_database_left(WordList, WordList, Database,RelevantData, stardirector,ProvidedInfo) :-
+  exists_in_database(WordList, Database,RelevantData, stardirector,ProvidedInfo)
+
+exists_in_database_left(cons(_, ShorterWordList), Result, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+  exists_in_database_left(ShorterWordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)
+
+/*
+  exists_in_database_right(+WordList, -Result, +Database, -RelevantData, -ValidRole, -ProvidedInfo)
+  check if a prefix of WordList exists in the database and extract information from it.
+  for example, if ["James","Cameron"] exists in the database as a director, then
+  calling exists_in_database_left on ["James","Cameron", "some", "other", "strings"]
+  will retrieve ["James","Cameron"].
+*/
+exists_in_database_right(WordList, WordList, Database,RelevantData, stardirector,ProvidedInfo) :-
+  exists_in_database(WordList, Database,RelevantData, stardirector,ProvidedInfo)
+
+exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+  drop_last_elem_from_list(WordList, ShorterWordList) &
+  exists_in_database_right(ShorterWordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)
+
+/*
+  exists_in_database(+WordList, +Database, -RelevantData, -ValidRole, -ProvidedInfo)
+  check if WordList exists in the database and extract information from it.
+*/
+exists_in_database(WordList, Database,RelevantData, movie,ProvidedInfo) :-
+  member(star(WordList, Stars, Director), Database) &
+  same(RelevantData, [WordList, Stars, Director]) &
+  same(ProvidedInfo, WordList)
+
+exists_in_database(WordList, Database,RelevantData, star,ProvidedInfo) :-
+  ~person_both(WordList,Database) &
+  member(star(Movie, X, Director), Database) & member(WordList,X) &
+  same(RelevantData, [Movie, X, Director]) &
+  same(ProvidedInfo, WordList)
+
+exists_in_database(WordList, Database,RelevantData, director,ProvidedInfo) :-
+  ~person_both(WordList,Database) &
+  member(star(Movie, Stars, WordList), Database) &
+  same(RelevantData, [Movie,Stars, WordList]) &
+  same(ProvidedInfo, WordList)
+
+exists_in_database(WordList, Database,RelevantData, stardirector,ProvidedInfo) :-
+  person_both(WordList,Database) &
+  same(ProvidedInfo, WordList)
+
+/*
+  person_both(+Person, +Database)
+  true if a person serves both as director and star
+*/
+person_both(Person,Database) :-
+  member(star(_,_,Person),Database) &
+  member(star(_,S2,_),Database) & member(Person,S2)
+
+/*
+  eliminate_double_negation(+InputList, -ResultList)
+  remove consecutive negation words from WordList
+*/
+eliminate_double_negation([],[])
+eliminate_double_negation(cons(Word1,cons(Word2, Rest)),Result) :-
+  negToken(Word1,_) &
+  negToken(Word2,_) &
+  eliminate_double_negation(Rest, Result)
+eliminate_double_negation(cons(Word,Rest),cons(Word,Result)) :-
+  ~negToken(Word,_) &
+  eliminate_double_negation(Rest, Result)
+eliminate_double_negation(cons(Head,cons(Word,Rest)),cons(Head,cons(Word,Result))) :-
+  ~negToken(Word,_) &
+  eliminate_double_negation(Rest, Result)

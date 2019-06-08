@@ -140,54 +140,38 @@ attributeFromList(RelevantData, _, QAttr, _, Res, Message, _, _, _) :-
 person_both(Person,Database) :- member(star(_,_,Person),Database), member(star(_,S2,_),Database),member(Person,S2).
 
 % emma
-exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   member(star(WordList, Stars, Director), Database),
   RelevantData = [WordList, Stars, Director],
   ProvidedInfo = WordList,
   ValidRoles = movie.
-exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   not(person_both(WordList,Database)),
   member(star(Movie, X, Director), Database),member(WordList,X),
   RelevantData = [Movie, X, Director],
   ProvidedInfo = WordList,
   ValidRoles= star.
-exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   not(person_both(WordList,Database)),
   member(star(Movie, Stars, WordList), Database),
   RelevantData = [Movie,Stars, WordList],
   ProvidedInfo=WordList,
   ValidRoles= director.
-exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   person_both(WordList,Database),
   RelevantData = [_,_, _],
   ProvidedInfo = WordList,
   ValidRoles = stardirector.
+exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
+  exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo).
+
 exists_in_database_left(WordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   append([_], ShorterWordList, WordList),
   exists_in_database_left(ShorterWordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo).
 
 exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
-  member(star(WordList, Stars, Director), Database),
-  RelevantData = [WordList, Stars, Director],
-  ProvidedInfo = WordList,
-  ValidRoles = movie.
-exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
-  not(person_both(WordList,Database)),
-  member(star(Movie, X, Director), Database),member(WordList,X),
-  RelevantData = [Movie, X, Director],
-  ProvidedInfo = WordList,
-  ValidRoles= star.
-exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
-  not(person_both(WordList,Database)),
-  member(star(Movie, Stars, WordList), Database),
-    RelevantData = [Movie,Stars, WordList],
-  ProvidedInfo=WordList,
-  ValidRoles= director.
-exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
-  person_both(WordList,Database),
-  RelevantData = [_,_, _],
-  ProvidedInfo = WordList, %We don't search for movies this way
-  ValidRoles = stardirector.
+  exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo).
+
 exists_in_database_right(WordList, Result, Database, RelevantData, ValidRoles,ProvidedInfo) :-
   append(ShorterWordList, [_], WordList),
   exists_in_database_right(ShorterWordList, Result, Database, RelevantData, ValidRoles,ProvidedInfo).
