@@ -5,6 +5,35 @@
 ================================================================================
 */
 
+concat_string_list(A, Result) :- same(stringifyall(A), Result)
+
+
+
+/*string concat*/
+string_concat(A,B,C) :- evaluate(stringappend(A,B),C)
+
+
+nth1(1, cons(Elem,_), Elem)
+nth1(Index, [_, Rest], Elem) :-
+  evaluate(min(Index,1),1)&
+  evaluate(Index,s(N))&
+  nth1(Index, Rest, Elem)
+
+
+/*   Formats a list of lists in the following manner:
+    Usage: concat_string_list_of_lists([["David", "Lynch"], ["First", "Last"], ["Some",  "Name"]], Result), writeln(Result).
+    ==> "David Lynch, First Last, and Some Name"
+*/
+concat_string_list_of_lists([],"")
+concat_string_list_of_lists([Head], H):- concat_string_list(Head, H)
+concat_string_list_of_lists(cons(First,Second),H):- concat_string_list(First,F) &
+    concat_string_list(Second, S)& concat_string_list(cons(F, "and", S),H)
+concat_string_list_of_lists(cons(Head,Tail), Result) :-
+  concat_string_list_of_lists(Tail, Rest) &
+  concat_string_list(Head, H) &
+  string_concat(H, ", ", HeadSpace) &
+  string_concat(HeadSpace, Rest, Result)
+
 /*
   split_string_into_words: only works for lower case letters and numbers though...
   split_string_into_words(+String, -WordList)
@@ -243,10 +272,8 @@ negToken("not", neg)
 negToken("no", neg)
 negToken(S, neg) :- string_concat(_,"n't",S)
 
-
-
-  /* concat_string_list
-  concat_string_list_of_lists 
-  string_concat -- builtin
-  string_lower
-  nth1*/
+/*
+  did not convert:
+string_lower(+String, LowerCase)
+Convert String to lower case and unify the result with LowerCase.
+*/
