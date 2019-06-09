@@ -4,17 +4,22 @@
   utilities
 ================================================================================
 */
+concat_string_list([],"")
+concat_string_list([S],S)
+concat_string_list(cons(S, cons(A,Rest)), Result) :-
+  concat_string_list(cons(A,Rest), R) & evaluate(stringappend(S, " ", R), Result)
 
-concat_string_list(A, Result) :- evaluate(stringifyall(A), Result)
 
 
 /*string concat*/
 string_concat(A,B,C) :- evaluate(stringappend(A, " ",B),C)
 
 nth1(1, cons(Elem,_), Elem)
-nth1(Index, cons(_, Rest), Elem) :-
-  evaluate(min(1,Index),1)&
-  nth1(minus(Index,1), Rest, Elem)
+nth1(Index, cons(F, Rest), Elem) :-
+  distinct(F,Elem) &
+  nth1(PrevIndex, Rest, Elem) &
+  evaluate(plus(PrevIndex,1),Index)
+
 
 
 /*   Formats a list of lists in the following manner:
@@ -23,10 +28,12 @@ nth1(Index, cons(_, Rest), Elem) :-
 */
 concat_string_list_of_lists([],"")
 concat_string_list_of_lists([Head], H):- concat_string_list(Head, H)
-concat_string_list_of_lists(cons(First,Second),H):- concat_string_list(First,F) &
-    concat_string_list(Second, S)& concat_string_list(cons(F, "and", S),H)
-concat_string_list_of_lists(cons(Head,Tail), Result) :-
-  concat_string_list_of_lists(Tail, Rest) &
+concat_string_list_of_lists(cons(First,cons(Second,nil)),H) :-
+    concat_string_list(First,F) &
+    concat_string_list(Second, S)&
+    concat_string_list(cons(F, cons("and", [S])),H)
+concat_string_list_of_lists(cons(Head,cons(Second, cons(Third,Tail))), Result) :-
+  concat_string_list_of_lists(cons(Second, cons(Third,Tail)), Rest) &
   concat_string_list(Head, H) &
   string_concat(H, ", ", HeadSpace) &
   string_concat(HeadSpace, Rest, Result)
@@ -268,38 +275,38 @@ qWordPat1("what")
 qWordPat1("show")
 
 % lara
-pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL) &
-  qWordPat1(QWL) & nth1(QInd, WordList, QW) & member(X, WordList) & token(X, ResultQ, Suffix)&
-  nth1(AInd, WordList, X) & evaluate(min(AInd,QInd) QInd) & ~same(AInd,QInd) & member(Y, WordList)&  token(Y,ResultP,_)& nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd),AInd) & ~same(PInd,AInd)
+pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &
+  qWordPat1(QW) & nth1(QInd, WordList, QW) & member(X, WordList) & token(X, ResultQ, Suffix)&
+  nth1(AInd, WordList, X) & evaluate(min(AInd,QInd), QInd) & ~same(AInd,QInd) & member(Y, WordList)&  token(Y,ResultP,_)& nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd),AInd) & ~same(PInd,AInd)
 
-pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL) &
-  qWordPat1(QWL) & nth1(QInd, WordList, QW) &member(X, WordList) &token(X, ResultQ, Suffix) &
+pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &
+  qWordPat1(QW) & nth1(QInd, WordList, QW) &member(X, WordList) &token(X, ResultQ, Suffix) &
   nth1(AInd, WordList, X) & evaluate(min(QInd,AInd),QInd) & ~same(QInd,AInd) & ~negPatternHelper(_,WordList,ResultP,_,WordList,AInd)& same(ResultP,notspecified)
 
-pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL)&
-  qWordPat1(QWL) &nth1(QInd, WordList, QW)& member(X, WordList) & token(X, ResultQ, Suffix)&
+pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &
+  qWordPat1(QW) &nth1(QInd, WordList, QW)& member(X, WordList) & token(X, ResultQ, Suffix)&
   nth1(AInd, WordList, X) & evaluate(min(QInd,AInd), QInd) & ~same(QInd,AInd) & member(Y, WordList) &token(Y,ResultP,_) &nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd), PInd) & ~same(PInd,AInd)
-pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &string_lower(QW,QWL) &
-  qWordPat1(QWL)& nth1(QInd, WordList, QW)& member(X, WordList)& token(X, ResultQ, Suffix)&
+pattern2(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &
+  qWordPat1(QW)& nth1(QInd, WordList, QW)& member(X, WordList)& token(X, ResultQ, Suffix)&
   nth1(AInd, WordList, X) & evaluate(min(QInd,AInd), QInd) & ~same(QInd,AInd) & ~negPatternHelper(_,WordList,ResultP,_,WordList,AInd)& same(notspecified,ResultP)
 
 negPatternHelper(Y,WordList,ResultP,PInd,WordList,AInd) :- member(Y, WordList) & token(Y,ResultP,_) & nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd), AInd) & ~same(PInd,AInd)
 
 
-token(S, A, Suffix) :- string_lower(S, LowS) & attribute_token(LowS, A, Suffix)
-attribute_token(S, star,Suffix) :- string_concat("star", Suffix, S)
-attribute_token(S, star,Suffix) :- string_concat("act", Suffix, S)
-attribute_token(S, director,Suffix) :- string_concat("direct", Suffix, S)
+token(S, A, Suffix) :- attribute_token(S, A, Suffix)
+attribute_token(S, star,Suffix) :- has_prefix("star", Suffix, S)
+attribute_token(S, star,Suffix) :- has_prefix("act", Suffix, S)
+attribute_token(S, director,Suffix) :- has_prefix("direct", Suffix, S)
 attribute_token(S, director,_) :- same("by",S)
-attribute_token(S, director,Suffix) :- string_concat("filmmaker", Suffix, S)
-attribute_token(S, director,Suffix) :- string_concat("made", Suffix, S)
-attribute_token(S, director,Suffix) :- string_concat("mak", Suffix, S) %making, make
-attribute_token(S, movie, Suffix) :- string_concat("movie", Suffix, S) %movie, movies
-attribute_token(S, movie,Suffix) :-  ~same("filmmaker",S)& string_concat("film", Suffix, S)
-attribute_token(S, movie,Suffix) :- string_concat("flick", Suffix, S)
+attribute_token(S, director,Suffix) :- has_prefix("filmmaker", Suffix, S)
+attribute_token(S, director,Suffix) :- has_prefix("made", Suffix, S)
+attribute_token(S, director,Suffix) :- has_prefix("mak", Suffix, S) %making, make
+attribute_token(S, movie, Suffix) :- has_prefix("movie", Suffix, S) %movie, movies
+attribute_token(S, movie,Suffix) :-  ~same("filmmaker",S)& has_prefix("film", Suffix, S)
+attribute_token(S, movie,Suffix) :- has_prefix("flick", Suffix, S)
 negToken("not", neg)
 negToken("no", neg)
-negToken(S, neg) :- string_concat(_,"n't",S)
+negToken(S, neg) :- has_suffix(_,"n't",S)
 
 /*
   did not convert:
