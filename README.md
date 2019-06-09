@@ -1,6 +1,6 @@
-# CS151 Project: Movie Q&A chatbot
+# CS151 Project: Movie Q&A Chatbot
 
-## What is inside this repository?
+## What is inside this folder?
 #### Prolog code
 
 `run.sh`: script loading and running the interactive prolog program  
@@ -8,7 +8,7 @@
 `token.pl`: main file containing the core part of our project(parsing, pattern matching, etc)  
 `stringops.pl`: utility code realizing some string operations that are useful for parsing  
 `query.pl`: code defining query interface interacting with the database  
-`db.pl`: database containing entries in the form `star(MovieTitle, StarList, Director)` 
+`db.pl`: database containing entries in the form `star(MovieTitle, StarList, Director)`
 `db_generation/gen_db.py`: python code reading from the csv file and outputting entries in the form mentioned above  
 `db_generation/movie_metadata.csv`: source data
 
@@ -37,17 +37,25 @@ Question: Give me all movies by Jackson
 Did you know there are 2 directors you might have meant?
 Which of these directors did you mean: Mick and Peter?  Peter
 Thanks! Showing results for
-Peter Jackson: You might be looking for the movies King Kong, The Hobbit: An Unexpected Journey, The Hobbit: The Battle of the Five Armies, The Hobbit: The Desolation of Smaug, The Lord of the Rings: The Fellowship of the Ring, The Lord of the Rings: The Return of the King, The Lord of the Rings: The Two Towers and The Lovely Bones
-You might be looking for the movies King Kong, The Hobbit: An Unexpected Journey, The Hobbit: The Battle of the Five Armies, The Hobbit: The Desolation of Smaug, The Lord of the Rings: The Fellowship of the Ring, The Lord of the Rings: The Return of the King, The Lord of the Rings: The Two Towers and The Lovely Bones
+Peter Jackson: You might be looking for the movies King Kong, The Hobbit: An Unexpected Journey, The
+Hobbit: The Battle of the Five Armies, The Hobbit: The Desolation of Smaug, The Lord of the Rings: The
+Fellowship of the Ring, The Lord of the Rings: The Return of the King, The Lord of the Rings: The Two
+Towers and The Lovely Bones
+You might be looking for the movies King Kong, The Hobbit: An Unexpected Journey, The Hobbit: The Battle
+of the Five Armies, The Hobbit: The Desolation of Smaug, The Lord of the Rings: The Fellowship of the
+Ring, The Lord of the Rings: The Return of the King, The Lord of the Rings: The Two Towers and The
+Lovely Bones
 Enter another question or 'bye' to quit.
 
 Question: What is a movie with Quentin Tarantino
-Quentin Tarantino has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: c
+Quentin Tarantino has served as both a star and director. Are you looking for movies with him as (a)
+star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: c
 You might be looking for the movie The Hateful Eight
 Enter another question or 'bye' to quit.
 
 Question: What is a movie with Quentin Tarantino
-Quentin Tarantino has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: a
+Quentin Tarantino has served as both a star and director. Are you looking for movies with him as (a)
+star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: a
 You might be looking for the movie Grindhouse
 Enter another question or 'bye' to quit.
 
