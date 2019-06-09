@@ -1,8 +1,24 @@
-# cs151_project
-CS151 Project: fact-based Q&A chatbot
+# CS151 Project: Movie Q&A chatbot
 
-## How to run
-Install `swi-prolog` and run
+## What is inside this repository?
+#### Prolog code
+
+`run.sh`: script loading and running the interactive prolog program  
+`simple.pl`: top level code providing entry/exit point, dedicated to control flow of the program   
+`token.pl`: main file containing the core part of our project(parsing, pattern matching, etc)  
+`stringops.pl`: utility code realizing some string operations that are useful for parsing  
+`query.pl`: code defining query interface interacting with the database  
+`db.pl`: database containing entries in the form `star(MovieTitle, StarList, Director)` 
+`db_generation/gen_db.py`: python code reading from the csv file and outputting entries in the form mentioned above  
+`db_generation/movie_metadata.csv`: source data
+
+#### Epilog code
+
+`epilog_code`: epilog code with some comments for ease of examination   
+`epilog_code_without_comments`: epilog code without comments, which can be directly pasted into Sierra and interacted with
+
+## How to run the Prolog program
+Install `swi-prolog`, (you might need to do `chmod +x run.sh` to make it runnable) and run
 ```
 $ ./run.sh
 ```
@@ -18,7 +34,6 @@ You might be looking for these stars: Leonardo DiCaprio, Kate Winslet and Gloria
 Enter another question or 'bye' to quit.
 
 Question: Give me all movies by Jackson
-[Mick,Peter]
 Did you know there are 2 directors you might have meant?
 Which of these directors did you mean: Mick and Peter?  Peter
 Thanks! Showing results for
@@ -28,7 +43,7 @@ Enter another question or 'bye' to quit.
 
 Question: What is a movie with Quentin Tarantino
 Quentin Tarantino has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter your preference: c
-You might be looking for the movie Lara Croft: Tomb Raider
+You might be looking for the movie The Hateful Eight
 Enter another question or 'bye' to quit.
 
 Question: What is a movie with Quentin Tarantino
@@ -40,6 +55,32 @@ Question: bye
 Have a nice day!
 true .
 
+```
+
+## What about the Epilog Program
+Our epilog program provides a more limited interface compared to the Prolog program in the following ways:  
+1. Only alphanumeric characters and words starting with lower case letters are permitted in the database.  
+2. You can only ask about movies directed by a certain director or acted by a certain star.  
+3. No disambiguation is supported.  
+
+Start by pasting all the code in `epilog_code_without_comments` into Sierra.  
+The main query function provided is `answer(+Query, -Answer)`. You can query the following in Sierra:
+```
+Pattern: Answer
+Query: answer("show me movies acted by emma z", Answer)
+Result: "You might be looking for the movies awesome movie one and awesome movie three"
+
+Pattern: Answer
+Query: answer("what are movies lara b is in", Answer)
+Result: "You might be looking for the movies awesome movie two and awesome movie one"
+
+Pattern: Answer
+Query: answer("give me movies whose director is some one else", Answer)
+Result: "You might be looking for the movies awesome movie three"
+
+Pattern: Answer
+Query: answer("show me all movies abhijeet m was a star for", Answer)
+"You might be looking for the movies awesome movie one"
 ```
 
 ## Stage 1: movie terminology detection
