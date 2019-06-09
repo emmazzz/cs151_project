@@ -11,11 +11,6 @@ answer(Query, Answer) :-
   tokenize(WordList, Answer, D)
 
 
-/*
-================================================================================
-  utilities
-================================================================================
-*/
 concat_string_list([],"")
 concat_string_list([S],S)
 concat_string_list(cons(S, cons(A,Rest)), Result) :-
@@ -25,7 +20,6 @@ concat_string_list(cons(S, cons(A,Rest)), Result) :-
 nth1(X,1,X!_)
 nth1(X, K, _!L) :- nth1(X, K1, L) & evaluate(plus(1,K1),K)
 
-/*string concat*/
 string_concat(A,B,C) :- evaluate(stringappend(A, " ",B),C)
 
 nth1(1, cons(Elem,_), Elem)
@@ -34,12 +28,6 @@ nth1(Index, cons(F, Rest), Elem) :-
   nth1(PrevIndex, Rest, Elem) &
   evaluate(plus(PrevIndex,1),Index)
 
-
-
-/*   Formats a list of lists in the following manner:
-    Usage: concat_string_list_of_lists([["David", "Lynch"], ["First", "Last"], ["Some",  "Name"]], Result), writeln(Result).
-    ==> "David Lynch, First Last, and Some Name"
-*/
 concat_string_list_of_lists([],"")
 concat_string_list_of_lists([Head], H):- concat_string_list(Head, H)
 concat_string_list_of_lists(cons(First,cons(Second,nil)),H) :-
@@ -52,10 +40,6 @@ concat_string_list_of_lists(cons(Head,cons(Second, cons(Third,Tail))), Result) :
   string_concat(H, ", ", HeadSpace) &
   string_concat(HeadSpace, Rest, Result)
 
-/*
-  split_string_into_words: only works for lower case letters and numbers though...
-  split_string_into_words(+String, -WordList)
-*/
 split_string_into_words(S, Res) :-
     evaluate(readstringall(S),X) & list_stringify(X, Res)
 list_stringify([],[])
@@ -63,36 +47,18 @@ list_stringify(cons(X, L), cons(S, SL)) :-
     list_stringify(L, SL) &
     evaluate(stringify(X),S)
 
-/*
-  drop_last_elem_from_list(+InputList, -ResultList)
-*/
 drop_last_elem_from_list([X], [])
 drop_last_elem_from_list(cons(X, L), cons(X, RL)) :-
    drop_last_elem_from_list(L, RL)
 
-/*
-  has_suffix(-Prefix, +Suffix, +Input)
-*/
 has_suffix(Prefix, Suffix, Input) :-
   evaluate(stringappend("(.*)",Suffix),Pattern) &
   evaluate(matches(Input, Pattern), [A,Prefix]) & same(A, Input)
-/*
-  has_prefix(+Prefix, -Suffix, +Input)
-*/
+
 has_prefix(Prefix, Suffix, Input) :-
   evaluate(stringappend(Prefix, "(.*)"),Pattern) &
   evaluate(matches(Input, Pattern), [A,Suffix]) & same(A, Input)
 
-
-/*
-================================================================================
-  query.pl functions
-================================================================================
-*/
-
-/*
-  find_all_movies_by_type(+Role, +ProvidedInfo, -Movies, +Database)
-*/
 find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
 	same(NewRole,stardirector) & find_all_movies_by_person(ProvidedInfo, Movies, Database)
 
@@ -104,37 +70,21 @@ find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
 	same(NewRole,director) &
 	find_all_movies_by_director(ProvidedInfo, Movies, Database)
 
-/*
-  find_all_movies_by_person(+Person, -Movies, +Database)
-*/
 find_all_movies_by_person(Person, Movies, Database) :-
   find_all_movies_by_star(Person, StarredMovies, Database) &
   find_all_movies_by_director(Person, DirectedMovies, Database) &
   evaluate(append(StarredMovies, DirectedMovies), Movies)
 
-/*
-  find_all_movies_by_star(+Star, -Movies, +Database)
-*/
 find_all_movies_by_star(Star, Movies, Database) :-
   evaluate(setofall(Movie,find_one_movie_by_star(Star, Movie, Database)), Movies)
 find_one_movie_by_star(Star, Movie, Database) :-
   member(star(Movie, Stars, _), Database) &
   member(Star, Stars)
 
-/*
-  find_all_movies_by_director(+Director, -Movies, +Database)
-*/
 find_all_movies_by_director(Director, Movies, Database) :-
   evaluate(setofall(Movie,find_one_movie_by_director(Director, Movie, Database)), Movies)
 find_one_movie_by_director(Director, Movie, Database) :-
   member(star(Movie, _, Director), Database)
-
-
-/*
-================================================================================
-  token.pl functions
-================================================================================
-*/
 
 tokenize(WordList, Result, Database) :-
   find_query_attributes(WordList, QAttr,PAttr, Suffix) &
@@ -169,27 +119,12 @@ finds_closest_in_database(WordList, Result, Database,QAttr, PAttr, Suffix,Messag
   drop_last_elem_from_list(WordList, ShorterWordList) &
   finds_closest_in_database(ShorterWordList, Result, Database,QAttr, PAttr,Suffix, Message)
 
-
-/*
-  exists_in_database_left(+WordList, -Result, +Database, -RelevantData, -ValidRole, -ProvidedInfo)
-  check if a suffix of WordList exists in the database and extract information from it.
-  for example, if ["James","Cameron"] exists in the database as a director, then
-  calling exists_in_database_left on ["some", "other", "strings", "James","Cameron"]
-  will retrieve ["James","Cameron"].
-*/
 exists_in_database_left(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo)
 
 exists_in_database_left(cons(_, ShorterWordList), Result, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   exists_in_database_left(ShorterWordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)
 
-/*
-  exists_in_database_right(+WordList, -Result, +Database, -RelevantData, -ValidRole, -ProvidedInfo)
-  check if a prefix of WordList exists in the database and extract information from it.
-  for example, if ["James","Cameron"] exists in the database as a director, then
-  calling exists_in_database_left on ["James","Cameron", "some", "other", "strings"]
-  will retrieve ["James","Cameron"].
-*/
 exists_in_database_right(WordList, WordList, Database,RelevantData, ValidRoles,ProvidedInfo) :-
   exists_in_database(WordList, Database,RelevantData, ValidRoles,ProvidedInfo)
 
@@ -197,10 +132,6 @@ exists_in_database_right(WordList, Result, Database,RelevantData, ValidRoles,Pro
   drop_last_elem_from_list(WordList, ShorterWordList) &
   exists_in_database_right(ShorterWordList, Result, Database,RelevantData, ValidRoles,ProvidedInfo)
 
-/*
-  exists_in_database(+WordList, +Database, -RelevantData, -ValidRole, -ProvidedInfo)
-  check if WordList exists in the database and extract information from it.
-*/
 exists_in_database(WordList, Database,RelevantData, movie,ProvidedInfo) :-
   member(star(WordList, Stars, Director), Database) &
   same(RelevantData, [WordList, Stars, Director]) &
@@ -222,18 +153,10 @@ exists_in_database(WordList, Database,RelevantData, stardirector,ProvidedInfo) :
   person_both(WordList,Database) &
   same(ProvidedInfo, WordList)
 
-/*
-  person_both(+Person, +Database)
-  true if a person serves both as director and star
-*/
 person_both(Person,Database) :-
   member(star(_,_,Person),Database) &
   member(star(_,S2,_),Database) & member(Person,S2)
 
-/*
-  eliminate_double_negation(+InputList, -ResultList)
-  remove consecutive negation words from WordList
-*/
 eliminate_double_negation([],[])
 eliminate_double_negation(cons(Word1,cons(Word2, Rest)),Result) :-
   negToken(Word1,_) &
@@ -246,11 +169,6 @@ eliminate_double_negation(cons(Head,cons(Word,Rest)),cons(Head,cons(Word,Result)
   ~negToken(Word,_) &
   eliminate_double_negation(Rest, Result)
 
-/* lara*/
-
-
-/* */
-
 matchesOrNotProvided(PAttr,ValidRoles, _, NewRole) :- same(PAttr, ValidRoles) & same(NewRole, PAttr)
 matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- ~same(PAttr, ValidRoles) & ~same(notspecified,PAttr) & same(stardirector,ValidRoles)
   & same(NewRole, PAttr)
@@ -259,14 +177,12 @@ matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- ~same(PAttr, ValidRoles)& s
 matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole) :- ~same(PAttr, ValidRoles) & same(notspecified,PAttr) & same(stardirector, ValidRoles)
 
 
-
 setRole(In,NewRole):- same("a",In) & same(star,NewRole)
 setRole(In,NewRole):- same("b",In)& same(director,NewRole)
 setRole(In,NewRole):- same("c",In)& same(stardirector,NewRole)
 setRole(In,NewRole):- ~same("a",In) & ~same("b",In) & ~same("c",In)& same(stardirector,NewRole) & same("Didn't quite catch that. We're showing you all the results anyway.",OutputMessage1)
 
 
-/* Plural movie requested */
 attributeFromList(_, Database, QAttr, PAttr, _, Message,Suffix, ValidRoles, ProvidedInfo) :-
   same(movie,QAttr)& same("s",Suffix) & matchesOrNotProvided(PAttr,ValidRoles, ProvidedInfo, NewRole) &
   same("You might be looking for the movies",M) & find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) &
@@ -275,19 +191,16 @@ attributeFromList(_, Database, QAttr, PAttr, _, Message,Suffix, ValidRoles, Prov
 
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern1(WordList, QAttr, PAttr, Suffix)
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :- pattern2(WordList, QAttr, PAttr, Suffix)
-%find_question_attribute(WordList, Attr) :- pattern2(WordList, Attr)
 find_query_attributes(WordList, QAttr, PAttr, Suffix) :-
   ~pattern1(WordList, QAttr, PAttr, Suffix) &
   ~pattern2(WordList, QAttr, PAttr, Suffix) &
-  same("randomInfo",QAttr) %all else fails choose a random one not provided info
+  same("randomInfo",QAttr)
 
-%Give ... attribute; e.g. Give me the movie with Bill Pullman
 qWordPat1("give")
 qWordPat1("who")
 qWordPat1("what")
 qWordPat1("show")
 
-% lara
 pattern1(WordList, ResultQ,ResultP, Suffix) :- member(QW, WordList) &
   qWordPat1(QW) & nth1(QInd, WordList, QW) & member(X, WordList) & token(X, ResultQ, Suffix)&
   nth1(AInd, WordList, X) & evaluate(min(AInd,QInd), QInd) & ~same(AInd,QInd) & member(Y, WordList)&  token(Y,ResultP,_)& nth1(PInd, WordList, Y) & evaluate(min(PInd,AInd),AInd) & ~same(PInd,AInd)
@@ -320,9 +233,3 @@ attribute_token(S, movie,Suffix) :- has_prefix("flick", Suffix, S)
 negToken("not", neg)
 negToken("no", neg)
 negToken(S, neg) :- has_suffix(_,"n't",S)
-
-/*
-  did not convert:
-string_lower(+String, LowerCase)
-Convert String to lower case and unify the result with LowerCase.
-*/
