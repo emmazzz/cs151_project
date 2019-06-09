@@ -8,9 +8,9 @@
 `token.pl`: main file containing the core part of our project(parsing, pattern matching, etc)  
 `stringops.pl`: utility code realizing some string operations that are useful for parsing  
 `query.pl`: code defining query interface interacting with the database  
-`db.pl`: database containing entries in the form `star(MovieTitle, StarList, Director)` 
-`db_generation/gen_db.py`: python code reading from the csv file and outputting entries in the form mentioned above  
-`db_generation/movie_metadata.csv`: source data
+`db.pl`: database containing entries in the form `star(MovieTitle, StarList, Director)`  
+`db_generation/gen_db.py`: python code reading from the csv file and outputting entries in the form mentioned above    
+`db_generation/movie_metadata.csv`: source data 
 
 #### Epilog code
 
