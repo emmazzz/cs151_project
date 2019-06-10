@@ -13,7 +13,7 @@ tokenize(WordList, Result, Database) :-
   tokenize_string_list(WordListNoDoubleNegs, [], _, Database, QAttr, PAttr, Suffix, Result).
 
 %--------------------------TOKENIZATION AND PARSING------------------------------------*/
-/* Our three supported attributes about which users can ask questions 
+/* Our three supported attributes about which users can ask questions
  * and provide info for a question using
  * */
 attribute(movie).
@@ -96,7 +96,7 @@ matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- not(PAttr = ValidRoles), no
 matchesOrNotProvided(PAttr,ValidRoles, _, NewRole):- not(PAttr = ValidRoles), PAttr = notspecified, not(ValidRoles = stardirector),
   NewRole = ValidRoles.
 matchesOrNotProvided(PAttr,ValidRoles,ProvidedInfo, NewRole) :- not(PAttr = ValidRoles),PAttr = notspecified, ValidRoles = stardirector,
-  concat_string_list(ProvidedInfo, Strinfo), write(Strinfo), 
+  concat_string_list(ProvidedInfo, Strinfo), write(Strinfo),
   write(" has served as both a star and director. Are you looking for movies with him as (a) star, (b) as a director or (c) all movies he was involved in in any capacity? Enter a, b, or c to indicate your preference: "),
   read_line_to_string(user_input,In), setRole(In,NewRole).
 
@@ -214,7 +214,7 @@ find_query_attributes(WordList, QAttr, PAttr, Suffix, WL) :-
   not(pattern1(WordList, QAttr, PAttr, Suffix, WL)),
   QAttr = "randomInfo". %all else fails choose a random one not provided info
 without_last([_], []).
-without_last([X|Xs], [X|WithoutLast]) :- 
+without_last([X|Xs], [X|WithoutLast]) :-
     without_last(Xs, WithoutLast).
 %Give ... attribute; e.g. Give me the movie with Bill Pullman
 qWordPat1("give").
@@ -224,7 +224,7 @@ qWordPat1("show").
 
 %QW refers to question word, the placement of which is useful for determining the placements of the desired attribute (ResultQ)
 % and the attribute of the information provided (ResultP)
-% Each definition of pattern refers to a distinct pattern and obtains the desired 
+% Each definition of pattern refers to a distinct pattern and obtains the desired
 pattern1(WordList, ResultQ,ResultP, Suffix, WL) :- member(QW, WordList),string_lower(QW,QWL),
   qWordPat1(QWL), nth1(QInd, WordList, QW), member(X, WordList), token(X, ResultQ, Suffix),
   nth1(AInd, WordList, X),AInd > QInd, member(Y, WordList), token(Y,ResultP,_), nth1(PInd, WordList, Y), PInd>AInd, WL = WordList.
@@ -268,34 +268,3 @@ attribute_token(S, movie,Suffix) :- string_concat("flick", Suffix, S).
 negToken("not", neg).
 negToken("no", neg).
 negToken(S, neg) :- string_concat(_,"n't",S).
-
-/* movies by person; can't tell if star or director provided */
-find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
-	NewRole = stardirector, find_all_movies_by_person(ProvidedInfo, Movies, Database).
-
-/* movies by star */
-find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
-	NewRole = star ,
-	find_all_movies_by_star(ProvidedInfo, Movies, Database).
-
-/* movies by director */
-find_all_movies_by_type(NewRole, ProvidedInfo, Movies, Database) :-
-	NewRole = director,
-	find_all_movies_by_director(ProvidedInfo, Movies, Database).
-
-/* specific find_all_movies_by_x definitions */
-find_all_movies_by_person(Person, Movies, Database) :-
-  find_all_movies_by_star(Person, StarredMovies, Database),
-  find_all_movies_by_director(Person, DirectedMovies, Database),
-  union(StarredMovies, DirectedMovies, Movies).
-
-find_all_movies_by_star(Star, Movies, Database) :-
-  setof(Movie,find_one_movie_by_star(Star, Movie, Database), Movies).
-find_one_movie_by_star(Star, Movie, Database) :-
-  member(star(Movie, Stars, _), Database),
-  member(Star, Stars).
-
-find_all_movies_by_director(Director, Movies, Database) :-
-  setof(Movie,find_one_movie_by_director(Director, Movie, Database), Movies).
-find_one_movie_by_director(Director, Movie, Database) :-
-  member(star(Movie, _, Director), Database).
