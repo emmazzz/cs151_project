@@ -8,8 +8,8 @@
 `token.pl`: main file containing the core part of our project(parsing, pattern matching, etc)  
 `stringops.pl`: utility code realizing some string operations that are useful for parsing  
 `query.pl`: code defining query interface interacting with the database  
-`db.pl`: database containing entries in the form `star(MovieTitle, StarList, Director)`
-`db_generation/gen_db.py`: python code reading from the csv file and outputting entries in the form mentioned above  
+`db.pl`: database containing entries in the form `star(MovieTitle, StarList, Director)`  
+`db_generation/gen_db.py`: python code reading from the csv file and outputting entries in the form mentioned above    
 `db_generation/movie_metadata.csv`: source data
 
 #### Epilog code
@@ -18,6 +18,10 @@
 `epilog_code_without_comments`: epilog code without comments, which can be directly pasted into Sierra and interacted with
 
 ## How to run the Prolog program
+### If you like web interfaces
+Our code is in the cloud! Go to https://swish.swi-prolog.org/p/movie_chatbot.pl and play with it.
+
+### If you prefer to run it locally
 Install `swi-prolog`, (you might need to do `chmod +x run.sh` to make it runnable) and run
 ```
 $ ./run.sh
