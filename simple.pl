@@ -1,10 +1,21 @@
+/*----------------------------CS 151 PROJECT: MOVIE CHATBOT----------------------------*/
+/*----------------------------Lara Bagdasarian, Emma Zhong-----------------------------*/
+/* Usage: Enter hi. in the query box (needs to be typed exactly) and click the 'Run!'
+ * button. Enter questions according to the prompts in the 'line>' field */
+/*-------FOR MORE USAGE DETAILS AND ANALOGOUS EPILOG CODE SEE readme.pdf--------------*/
+
 % entry point
 :- consult('stringops.pl').
 :- consult('query.pl').
 :- consult('token.pl').
 :- consult('db.pl').
 
+/*----------------------------QUERY TO START THE DATABASE------------------------------*/
+
 hi :- database(X), start(X).
+
+/*----------------------------PRIMARY CONTROL SEQUENCE---------------------------------*/
+
 start(Database) :-
   ask(Input),
   control(Input, Database).
@@ -25,4 +36,4 @@ control(Input, Database) :-
   start(NewDatabase).
 
 answer(WordList, Database, "Enter another question or 'bye' to quit.\n", Database) :- 
-  tokenize(WordList,Result,Database), ((not_inst(Result), writeln("Sorry, we couldn't understand what you said; please try again.")); (not(not_inst(Result)),writeln(Result))).
+  tokenize(WordList,Result,Database), ((not_instantiated(Result), writeln("Sorry, we couldn't understand what you said; please try again.")); (not(not_instantiated(Result)),writeln(Result))).

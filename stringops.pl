@@ -1,8 +1,10 @@
+/*----------------------------OUR UTIL RULES---------------------------------*/
 /*
-    String helper functions for tokenization.
+    String and list helper functions for tokenization and parsing use.
 */
 
-not_inst(Var):-
+/* Holds if Var is not instantiated to a value */
+not_instantiated(Var):-
   \+(\+(Var=0)),
   \+(\+(Var=1)).
 
@@ -32,12 +34,12 @@ good_cs([_ | CharsIn], CharsOut) :-
     Usage: concat([str1,str2,...,stri], combinedstring)
             note that combined string cannot also be contained in StrList
 */
-concat(StrList, Res) :- %Res can't be contained in
+concat(StrList, Res) :-
     maplist(atom_chars, StrList, Lists),
     append(Lists, List),
     atom_chars(Res, List).
 
-
+/* String representation of list, formatted such that elements are separated by spaces */
 concat_string_list([],"").
 concat_string_list([Head], Head).
 concat_string_list([Head|Tail], Result) :-
@@ -57,10 +59,12 @@ format_string_list([Head|Tail], Result) :-
   string_concat(Head, ", ", HeadSpace),
   string_concat(HeadSpace, Rest, Result).
 
-/* Gets length of list */
-len(N,L) :- len(N, 0, L).
-len([],L,L).
-len([_|N],T,L) :- NT is T+1, len(N, NT, L).
+/* Gets length of list; stores it in LenResult*/
+len([], LenResult):-
+    LenResult is 0.
+len([_|Y], LenResult):-
+    len(Y, L),
+    LenResult is L+1.
 /*
     Formats a list of lists in the following manner:
     Usage: concat_string_list_of_lists([["David", "Lynch"], ["First", "Last"], ["Some",  "Name"]], Result), writeln(Result).
@@ -75,6 +79,10 @@ concat_string_list_of_lists([Head|Tail], Result) :-
   concat_string_list(Head, H),
   string_concat(H, ", ", HeadSpace),
   string_concat(HeadSpace, Rest, Result).
+
+/* List append: W is [ elements of Y , elements of Z ] */
+append( [], A, A).
+append( [A | B], C, [A | D]) :- append( B, C, D).
 
 /* Checks if list is empty */
 list_empty([], true).
